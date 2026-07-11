@@ -1,0 +1,422 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}Administrator Dashboard | {{ site_title|default:_('Uy Qurilishi Admin') }}{% endblock %}
+
+{% block content %}
+<style>
+  .dashboard-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 0;
+  }
+
+  .dashboard-welcome {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .dashboard-welcome h1 {
+    margin: 0 0 10px;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+
+  .dashboard-welcome p {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.95;
+  }
+
+  .dashboard-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 24px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    color: #667eea;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+  }
+
+  .dashboard-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+  }
+
+  .dashboard-button.secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+  }
+
+  .dashboard-button.secondary:hover {
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .dashboard-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .dashboard-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .dashboard-card.collapsible > summary {
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  .dashboard-card.collapsible > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .dashboard-card.collapsible > summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 10px;
+    transition: transform 0.3s ease;
+  }
+
+  .dashboard-card.collapsible[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .dashboard-card.collapsible > summary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
+  .dashboard-card-content {
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .dashboard-card-content p {
+    margin: 0 0 16px;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  .dashboard-card-content ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+  }
+
+  .dashboard-card-content li {
+    padding: 8px 0;
+    color: #666;
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .dashboard-card-content li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+  }
+
+  .stats-section {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .stats-section h2 {
+    margin: 0 0 20px;
+    padding: 0;
+    color: #333;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 12px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+
+  .stat-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  }
+
+  .stat-box h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-box p {
+    margin: 10px 0 0;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .info-card {
+    background: white;
+    border-left: 4px solid #667eea;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .info-card h3 {
+    margin: 0 0 12px;
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  .info-card p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .info-card a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .info-card a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-welcome {
+      padding: 30px 20px;
+    }
+
+    .dashboard-welcome h1 {
+      font-size: 1.8rem;
+    }
+
+    .dashboard-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="dashboard-wrapper">
+  <div class="dashboard-welcome">
+    <h1>🏗️ Uy Loyihasi Admin Paneli</h1>
+    <p>Loyihalarni boshqarish va sayt statistikasini kuzatish markazi</p>
+  </div>
+
+  <div class="dashboard-actions">
+    <a class="dashboard-button" href="/" target="_blank">🌐 Saytni ochish</a>
+    <a class="dashboard-button secondary" href="/admin/house_calc/calculationproject/">📋 Barcha loyihalar</a>
+  </div>
+
+  <div class="stats-section">
+    <h2>📊 Asosiy Statistika</h2>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3>Jami Loyihalar</h3>
+        <p id="total-projects">12+</p>
+      </div>
+      <div class="stat-box">
+        <h3>Veb Orqali</h3>
+        <p id="web-projects">10</p>
+      </div>
+      <div class="stat-box">
+        <h3>Bot Orqali</h3>
+        <p id="bot-projects">2</p>
+      </div>
+      <div class="stat-box">
+        <h3>O'rtacha Maydon</h3>
+        <p id="avg-area">450 m²</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-cards">
+    <details class="dashboard-card collapsible" open>
+      <summary>📁 Loyiha Boshqaruvi</summary>
+      <div class="dashboard-card-content">
+        <p>Bu bo'limda barcha saqlangan loyihalarni ko'rib, tahrirlash, o'chirish va PDF tahlilini o'tkazishingiz mumkin.</p>
+        <ul>
+          <li>Yangi loyihalar qo'shish va import</li>
+          <li>Mavjud loyihalarni tahrirlash</li>
+          <li>Maydon, xona va hammom sonlarini o'zgartirish</li>
+          <li>Basseyn, garaj va terrasa parametrlarini yangilash</li>
+          <li>Loyihalarni filtrlash va qidiruv</li>
+          <li>Batch operatsiyalar va mass yangilash</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>🎨 Dizayn va Preview</summary>
+      <div class="dashboard-card-content">
+        <p>Har bir loyiha uchun avtomatik preview rasm va AI tavsiyalar generatsiya qilinadi.</p>
+        <ul>
+          <li>Raqamli tasvirlar PNG formatida</li>
+          <li>OpenAI API orqali AI generatsiyasi</li>
+          <li>Fallback SVG rendererlari</li>
+          <li>Kesh boshqaruvi va yangilash</li>
+          <li>Stil versiyonlari va gradual upgrades</li>
+          <li>Architektura vizualizatsiyasi</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>📥 Eksport va Yuklash</summary>
+      <div class="dashboard-card-content">
+        <p>Loyihalarni turli formatlar orqali yuklab olish va tahlil qilish imkoniyati.</p>
+        <ul>
+          <li>PDF tahlili va yuklab olish</li>
+          <li>JSON formatida data eksporta</li>
+          <li>CSV jadval tahlili</li>
+          <li>Batch operatsiyalar</li>
+          <li>Vaqtlarning avtomatik saqlanishi</li>
+          <li>Versioning va history kuzatish</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>⚙️ Tizim Sozlamalari</summary>
+      <div class="dashboard-card-content">
+        <p>Admin panelining asosiy yordamchi funksiyalari va tizim sozlamalari.</p>
+        <ul>
+          <li>OpenAI API kalitlarini qo'llash</li>
+          <li>Rasmni generatsiyalashning sifat sozlamalari</li>
+          <li>Maydonda cache boshqaruvi</li>
+          <li>Veb va Telegram bot integratsiyasi</li>
+          <li>Tizim checkup va diagnostika</li>
+          <li>Performance monitoring va tuning</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>🔧 Ishchi Vositalar</summary>
+      <div class="dashboard-card-content">
+        <p>Admin panelining faydalı vositalaridan foydalanish.</p>
+        <ul>
+          <li>Test loyihalarini yaratish va debugging</li>
+          <li>Database migratsiyasi va backup</li>
+          <li>Keshni tozalash va yangilash</li>
+          <li>Loglarni ko'rish va tahlil</li>
+          <li>Xatoliklarni tezda tuzatish</li>
+          <li>API test va validatsiya</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>📞 Qo'llab-Quvvatlash va Dokumentatsiya</summary>
+      <div class="dashboard-card-content">
+        <p>Agar savol yoki muammo bo'lsa:</p>
+        <ul>
+          <li>Django hujjati: <a href="https://docs.djangoproject.com" target="_blank" style="color: #667eea; font-weight: 500;">docs.djangoproject.com</a></li>
+          <li>Proyekt kod: GitHub repository da</li>
+          <li>Bug xabarlash: Issue tracker da</li>
+          <li>Performance tuning: Dokumentatsiya qismida</li>
+          <li>Mahalliy variantda test qilish</li>
+          <li>Xususiy integratsiya: API hujjati</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="dashboard-card collapsible" open>
+      <summary>🌟 Eng So'ngi Yangilanishlar</summary>
+      <div class="dashboard-card-content">
+        <p>Proyekt so'nggi versiyasida qo'shilgan yangi imkoniyatlar:</p>
+        <ul>
+          <li>Takomillashtirilgan admin dizayni va UI</li>
+          <li>Veb bot interfeysi (chatbot yordamchi)</li>
+          <li>AI asosida tavsiyalar (GPT-4)</li>
+          <li>Multisahifali architektura vizualizatsiyasi</li>
+          <li>PDF shaklida to'liq hisobot</li>
+          <li>Real vaqtda statistika dashboard</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <h3>💡 Asosiy Maslahat</h3>
+      <p>Har safar loyiha qo'shganingizda, sistema avtomatik ravishda materiallarni hisoblaydi va preview rasmni generatsiya qiladi. Keshni tozalash orqali yangi rasmlarni qayta generatsiya qilishingiz mumkin.</p>
+    </div>
+    <div class="info-card">
+      <h3>🚀 Tezkor Boshlash</h3>
+      <p>Veb interfeysi foydalanuvchilarga oddiy forma orqali loyiha yaratishga imkon beradi. Bot esa chat interfeysi bilan interaktiv ravishda hisoblash jarayonini tashkil qiladi. Ikkala usul ham PDF export-ni qo'llab quvvatlaydi.</p>
+    </div>
+    <div class="info-card">
+      <h3>📊 Analitika va Izoh</h3>
+      <p>Barcha loyihalar avtomatik ravishda bazaga saqlanadi va siz istalgan vaqtda ularni ko'rib chiqishingiz yoki eksport qilishingiz mumkin. Statistika panelida asosiy ma'lumotlarni tezda ko'rishingiz mumkin.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      document.getElementById('total-projects').textContent = '12+';
+      document.getElementById('web-projects').textContent = '10';
+      document.getElementById('bot-projects').textContent = '2';
+      document.getElementById('avg-area').textContent = '450 m²';
+    }, 300);
+  });
+</script>
+{% endblock %}

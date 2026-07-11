@@ -1,0 +1,62 @@
+<!-- API Helper for Frontend Integration -->
+<script>
+    // API Configuration
+    const API = {
+        BASE_URL: 'http://localhost:8000/api',
+        
+        // Auth Endpoints
+        getAuthStatus() {
+            return fetch(`${this.BASE_URL}/auth/status/`).then(r => r.json());
+        },
+        
+        signup(data) {
+            return fetch(`${this.BASE_URL}/auth/signup/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json());
+        },
+        
+        login(username, password) {
+            return fetch(`${this.BASE_URL}/auth/login/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            }).then(r => r.json());
+        },
+        
+        logout() {
+            return fetch(`${this.BASE_URL}/auth/logout/`, {method: 'POST'}).then(r => r.json());
+        },
+        
+        // Project Endpoints
+        getProjects(page = 1) {
+            return fetch(`${this.BASE_URL}/projects/?page=${page}`).then(r => r.json());
+        },
+        
+        createProject(data) {
+            return fetch(`${this.BASE_URL}/projects/create/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json());
+        },
+        
+        getProject(id) {
+            return fetch(`${this.BASE_URL}/projects/${id}/`).then(r => r.json());
+        },
+        
+        updateProject(id, data) {
+            return fetch(`${this.BASE_URL}/projects/${id}/update/`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json());
+        },
+        
+        // Dashboard
+        getDashboard() {
+            return fetch(`${this.BASE_URL}/dashboard/`).then(r => r.json());
+        }
+    };
+</script>

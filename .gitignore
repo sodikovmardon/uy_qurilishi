@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Django
+db.sqlite3
+*.log
+local_settings.py
+staticfiles/
+media/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated/temp files
+*.png
+*.pdf
+tmp*.pdf
+opencode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+frontend/node_modules/
+.vite/
+
+# Environment
+.env
+
+# Generated previews
+generated_previews/
+
+# Codex
+.codex

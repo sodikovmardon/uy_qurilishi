@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<head>
+<title>{% block title %}{% endblock %}</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+{% block extrastyle %}{% endblock %}
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/rtl.css" %}" />{% endif %}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/custom.css" %}" />
+{% block extrahead %}{% endblock %}
+{% block responsive %}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/responsive.css" %}" />
+{% endblock %}
+</head>
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
+  data-admin-utc-offset="{% now "Z" %}">
+
+<!-- Container -->
+<div id="container">
+
+    {% if not is_popup %}
+    <!-- Header -->
+    <header id="header">
+        <div id="branding">
+        {% block branding %}{% endblock %}
+        </div>
+        {% block usertools %}{% endblock %}
+    </header>
+    <!-- END Header -->
+    {% endif %}
+
+    {% if messages %}
+    <ul class="messagelist">{% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+    {% endfor %}</ul>
+    {% endif %}
+
+    <!-- Content -->
+    <div id="content" class="{% block coltype %}colM{% endblock %}">
+        {% block pretitle %}{% endblock %}
+        {% block content_title %}{% endblock %}
+        {% block content_subtitle %}{% endblock %}
+        {% block content %}
+        {% block object-tools %}{% endblock %}
+        {{ content }}
+        {% endblock %}
+        {% block sidebar %}{% endblock %}
+    </div>
+    <!-- END Content -->
+
+    {% if not is_popup %}
+    <!-- Footer -->
+    <footer id="footer">
+        {% block footer %}{{ footer_text|default:_('House Calculation Admin') }}{% endblock %}
+    </footer>
+    <!-- END Footer -->
+    {% endif %}
+
+</div>
+<!-- END Container -->
+
+</body>
+</html>

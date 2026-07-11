@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Uy Qurilishi Admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <span style="font-size: 1.3em;">🏗️</span>
+    <span>Uy Loyihasi Admin</span>
+  </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block extrastyle %}
+<style>
+  :root {
+    --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary: linear-gradient(135deg, #1d645b 0%, #2a9d8f 100%);
+    --accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+</style>
+{% endblock %}

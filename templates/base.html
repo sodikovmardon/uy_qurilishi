@@ -1,0 +1,64 @@
+{% load static %}
+<!doctype html>
+<html lang="uz" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Uy Loyiha Studio{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'house_calc/modern.css' %}">
+  <style>
+    .btn svg.icon { width: 16px; height: 16px; }
+    .brand svg.icon { width: 20px; height: 20px; }
+    .chip svg.icon, .status-pill svg.icon, .nav-links svg.icon { width: 14px; height: 14px; }
+    .check-card svg.icon { width: 16px; height: 16px; }
+  </style>
+</head>
+<body>
+  <nav class="glass-nav">
+    <div class="window-controls">
+      <span></span><span></span><span></span>
+    </div>
+
+    <a href="/" class="brand">
+      <div class="brand-mark">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div>
+        <strong>Uy Loyiha Studio</strong>
+        <small>Qurilish kalkulyatori</small>
+      </div>
+    </a>
+
+    <div class="nav-links">
+      <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Bosh Sahifa
+      </a>
+      <a href="/projects/" class="{% if '/projects/' in request.path %}active{% endif %}">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Loyihalar
+      </a>
+      <a href="/create/" class="btn-primary-nav">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Yangi Loyiha
+      </a>
+    </div>
+  </nav>
+
+  <main class="app-shell">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    prefersDark.addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      }
+    });
+  </script>
+</body>
+</html>

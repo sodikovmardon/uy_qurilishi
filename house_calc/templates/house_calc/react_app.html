@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Uy Qurilishi - Qurish Materiallar Kalkulyatori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { scroll-behavior: smooth; }
+        
+        /* ============ ANIMATIONS ============ */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes glow { 0%, 100% { text-shadow: 0 0 10px rgba(102, 126, 234, 0.5); } 50% { text-shadow: 0 0 20px rgba(102, 126, 234, 0.8); } }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        
+        .fade-in-up { animation: fadeInUp 0.6s ease-out; }
+        .slide-in-left { animation: slideInLeft 0.6s ease-out; }
+        
+        /* ============ GRADIENT STYLES ============ */
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* ============ HOVER EFFECTS ============ */
+        .hover-lift { 
+            transition: all 0.3s ease; 
+            cursor: pointer;
+        }
+        .hover-lift:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-glow { 
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-glow:hover { 
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        /* ============ NAVIGATION ============ */
+        .nav-link {
+            color: #374151;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        .nav-link:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        /* ============ DARK MODE PRO ============ */
+        .dark body {
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+        
+        .dark .nav-link {
+            color: #d1d5db;
+        }
+        
+        .dark .nav-link:hover {
+            color: #a5b4fc;
+            background: rgba(102, 126, 234, 0.15);
+        }
+        
+        .dark header {
+            background: linear-gradient(135deg, #1a1a3e 0%, #16213e 100%);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .dark main {
+            background: #0f0f23;
+        }
+        
+        /* ============ DARK MODE CARDS ============ */
+        .dark .bg-white {
+            background: #1a1a3e !important;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+        }
+        
+        .dark .text-gray-600 {
+            color: #b0b0d0 !important;
+        }
+        
+        .dark .text-gray-700 {
+            color: #a0a0c0 !important;
+        }
+        
+        .dark .border-gray-200 {
+            border-color: rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        /* ============ DARK MODE FORMS ============ */
+        .dark input[type="text"],
+        .dark input[type="email"],
+        .dark input[type="password"],
+        .dark input[type="number"],
+        .dark textarea,
+        .dark select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3) !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .dark input[type="text"]:focus,
+        .dark input[type="email"]:focus,
+        .dark input[type="password"]:focus,
+        .dark input[type="number"]:focus,
+        .dark textarea:focus,
+        .dark select:focus {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(165, 180, 252, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .dark input[type="checkbox"],
+        .dark input[type="radio"] {
+            accent-color: #667eea;
+        }
+        
+        /* ============ DARK MODE BUTTONS ============ */
+        .dark .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        
+        .dark .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .dark .bg-gradient-to-r {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* ============ DARK MODE SECTIONS ============ */
+        .dark .bg-gray-50 {
+            background: #1a1a3e !important;
+        }
+        
+        .dark .bg-gray-100 {
+            background: #252550 !important;
+        }
+        
+        .dark .bg-blue-100 {
+            background: rgba(102, 126, 234, 0.15) !important;
+            color: #a5b4fc !important;
+        }
+        
+        .dark .bg-green-100 {
+            background: rgba(16, 185, 129, 0.15) !important;
+            color: #6ee7b7 !important;
+        }
+        
+        .dark .bg-purple-100 {
+            background: rgba(168, 85, 247, 0.15) !important;
+            color: #d8b4fe !important;
+        }
+        
+        .dark .bg-orange-100 {
+            background: rgba(249, 115, 22, 0.15) !important;
+            color: #fed7aa !important;
+        }
+        
+        /* ============ DARK MODE TEXT ============ */
+        .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+            color: #f0f0ff;
+        }
+        
+        .dark p {
+            color: #d0d0e8;
+        }
+        
+        /* ============ DARK MODE FOOTER ============ */
+        .dark footer {
+            background: linear-gradient(135deg, #0a0a1e 0%, #1a1a3e 100%);
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+            color: #a0a0c0;
+        }
+        
+        /* ============ DARK MODE SHADOWS ============ */
+        .dark .shadow-lg {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .dark .shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        /* ============ DARK MODE SCROLLBAR ============ */
+        .dark::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .dark::-webkit-scrollbar-track {
+            background: #1a1a3e;
+        }
+        
+        .dark::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        .dark::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+        
+        /* ============ PRO DARK CARDS ============ */
+        .dark .card-dark {
+            background: linear-gradient(135deg, rgba(26, 26, 62, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .dark .card-dark:hover {
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.15);
+        }
+        
+        /* ============ PRO DARK BADGES ============ */
+        .dark .badge-dark {
+            background: rgba(102, 126, 234, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        /* ============ RESPONSIVE DARK ============ */
+        @media (max-width: 768px) {
+            .dark nav {
+                background: linear-gradient(180deg, #1a1a3e 0%, #16213e 100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div id="root" class="min-h-screen flex flex-col"></div>
+
+    <script>
+        // ============================================
+        // 🎨 MODERN UY QURILISHI APP - REACT CLONE
+        // ============================================
+
+        const app = {
+            // State Management
+            state: {
+                user: null,
+                projects: [],
+                currentPage: 'home',
+                loading: false,
+                formData: {},
+                darkMode: localStorage.getItem('darkMode') === 'true',
+            },
+
+            // Initialize App
+            init() {
+                this.setupDarkMode();
+                this.checkAuth();
+                this.render();
+                this.setupEventListeners();
+                this.loadProjects();
+            },
+
+            // Dark Mode Setup
+            setupDarkMode() {
+                if (this.state.darkMode) {
+                    document.documentElement.classList.add('dark');
+                }
+            },
+
+            // Check Authentication
+            async checkAuth() {
+                try {
+                    const response = await axios.get('/api/auth/status/');
+                    this.state.user = response.data.user;
+                } catch (error) {
+                    console.log('Not authenticated');
+                }
+            },
+
+            // Load Projects
+            async loadProjects() {
+                this.state.loading = true;
+                try {
+                    const response = await axios.get('/api/projects/');
+                    this.state.projects = response.data.projects || [];
+                } catch (error) {
+                    console.error('Error loading projects:', error);
+                }
+                this.state.loading = false;
+                this.render();
+            },
+
+            // Setup Event Listeners
+            setupEventListeners() {
+                document.addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-action]');
+                    if (btn) {
+                        const action = btn.dataset.action;
+                        if (this[action]) this[action].call(this, btn.dataset);
+                    }
+                });
+            },
+
+            // Navigation Actions
+            navigateTo(data) {
+                this.state.currentPage = data.page;
+                this.render();
+            },
+
+            // Toggle Dark Mode
+            toggleDarkMode() {
+                this.state.darkMode = !this.state.darkMode;
+                localStorage.setItem('darkMode', this.state.darkMode);
+                document.documentElement.classList.toggle('dark');
+                this.render();
+            },
+
+            // Create Project
+            async createProject(data) {
+                this.state.loading = true;
+                try {
+                    // Simulate project creation
+                    const newProject = {
+                        id: Math.random(),
+                        area: data.area || 150,
+                        rooms: data.rooms || 4,
+                        bathrooms: data.bathrooms || 2,
+                        created_at: new Date().toISOString(),
+                        owner: this.state.user ? this.state.user.username : 'Anonymous'
+                    };
+                    this.state.projects.unshift(newProject);
+                    this.state.currentPage = 'projects';
+                } catch (error) {
+                    console.error('Error creating project:', error);
+                }
+                this.state.loading = false;
+                this.render();
+            },
+
+            // Render Main App
+            render() {
+                const root = document.getElementById('root');
+                root.innerHTML = this.renderHeader() + this.renderMain() + this.renderFooter();
+            },
+
+            // ============================================
+            // 🧩 COMPONENT RENDERING
+            // ============================================
+
+            renderHeader() {
+                return `
+                    <header class="sticky top-0 z-50 bg-white dark:bg-gradient-to-r dark:from-gray-900 dark:to-gray-800 shadow-lg dark:shadow-2xl transition-all duration-300">
+                        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                            <div class="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition">
+                                <div class="text-2xl">🏠</div>
+                                <h1 class="text-2xl font-bold gradient-text">Uy Qurilishi</h1>
+                            </div>
+                            <div class="hidden md:flex items-center space-x-8">
+                                <button data-action="navigateTo" data-page="home" class="nav-link">Bosh Sahifa</button>
+                                <button data-action="navigateTo" data-page="projects" class="nav-link">Loyihalar</button>
+                                <button data-action="navigateTo" data-page="create" class="nav-link">Yangi Loyiha</button>
+                                ${this.state.user ? `<button data-action="navigateTo" data-page="profile" class="nav-link">Profil</button>` : ''}
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <button data-action="toggleDarkMode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200" title="Dark Mode Toggle">
+                                    ${this.state.darkMode ? '☀️' : '🌙'}
+                                </button>
+                                ${this.state.user ? 
+                                    `<button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200">Chiqish</button>` :
+                                    `<button data-action="navigateTo" data-page="login" class="px-4 py-2 gradient-bg text-white rounded-lg btn-glow transition-all duration-200">Kirish</button>`
+                                }
+                            </div>
+                        </nav>
+                    </header>
+                `;
+            },
+
+            renderMain() {
+                const content = {
+                    'home': this.renderHome(),
+                    'projects': this.renderProjects(),
+                    'create': this.renderCreateForm(),
+                    'login': this.renderLogin(),
+                    'profile': this.renderProfile(),
+                }[this.state.currentPage] || this.renderHome();
+
+                return `<main class="flex-1">${content}</main>`;
+            },
+
+            renderHome() {
+                return `
+                    <section class="gradient-bg text-white py-20">
+                        <div class="max-w-7xl mx-auto px-4 text-center fade-in-up">
+                            <h2 class="text-5xl font-bold mb-6">Uy Qurish Materiallarini Kalkulyatsiya Qiling</h2>
+                            <p class="text-xl mb-8 opacity-90">Tez, aniq va ishonchli qurish materiallar hisoblash platformasi</p>
+                            <button data-action="navigateTo" data-page="create" class="px-8 py-4 bg-white text-purple-600 font-bold rounded-lg text-lg hover:bg-gray-100 transition">
+                                Boshlang →
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="py-16 bg-gray-50 dark:bg-gray-800">
+                        <div class="max-w-7xl mx-auto px-4">
+                            <h3 class="text-3xl font-bold text-center mb-12 dark:text-white">Xususiyatlar</h3>
+                            <div class="grid md:grid-cols-3 gap-8">
+                                ${this.renderFeatureCard('📐', 'Aniq Hisoblash', 'Loyihangizga kerak bo\'lgan barcha materiallarni avtomatik hisoblang')}
+                                ${this.renderFeatureCard('💾', 'Saqlash', 'Barcha loyihalarni bulutda saqlang va hamma joydan kiriting')}
+                                ${this.renderFeatureCard('📊', 'Tahlil', 'Batafsil tahlil va tavsiyalarni oling')}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="py-16">
+                        <div class="max-w-7xl mx-auto px-4 text-center">
+                            <h3 class="text-3xl font-bold mb-8 dark:text-white">Bugungi Statistika</h3>
+                            <div class="grid md:grid-cols-4 gap-6">
+                                <div class="bg-blue-500 text-white p-6 rounded-lg hover-lift">
+                                    <p class="text-4xl font-bold">${this.state.projects.length}</p>
+                                    <p class="text-lg">Loyihalar</p>
+                                </div>
+                                <div class="bg-green-500 text-white p-6 rounded-lg hover-lift">
+                                    <p class="text-4xl font-bold">${this.state.projects.reduce((sum, p) => sum + (p.area || 0), 0)}</p>
+                                    <p class="text-lg">Jami Maydoni</p>
+                                </div>
+                                <div class="bg-purple-500 text-white p-6 rounded-lg hover-lift">
+                                    <p class="text-4xl font-bold">${this.state.projects.reduce((sum, p) => sum + (p.rooms || 0), 0)}</p>
+                                    <p class="text-lg">Xonalar</p>
+                                </div>
+                                <div class="bg-orange-500 text-white p-6 rounded-lg hover-lift">
+                                    <p class="text-4xl font-bold">100%</p>
+                                    <p class="text-lg">Dasturs</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                `;
+            },
+
+            renderFeatureCard(icon, title, desc) {
+                return `
+                    <div class="bg-white dark:bg-gray-900 dark:border dark:border-blue-500/20 p-8 rounded-xl hover-lift transition-all duration-300 shadow-lg dark:shadow-2xl">
+                        <p class="text-5xl mb-4 filter drop-shadow-lg">${icon}</p>
+                        <h4 class="text-xl font-bold mb-3 dark:text-white text-gray-900">${title}</h4>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">${desc}</p>
+                    </div>
+                `;
+            },
+
+            renderProjects() {
+                return `
+                    <section class="py-16">
+                        <div class="max-w-7xl mx-auto px-4">
+                            <div class="flex justify-between items-center mb-8">
+                                <h2 class="text-3xl font-bold dark:text-white">Mening Loyihalarim</h2>
+                                <button data-action="navigateTo" data-page="create" class="px-6 py-2 gradient-bg text-white rounded-lg btn-glow">
+                                    + Yangi Loyiha
+                                </button>
+                            </div>
+
+                            ${this.state.projects.length === 0 ? 
+                                `<div class="text-center py-12">
+                                    <p class="text-xl text-gray-500 dark:text-gray-400 mb-4">Hali loyiha yo'q</p>
+                                    <button data-action="navigateTo" data-page="create" class="px-6 py-2 gradient-bg text-white rounded-lg">
+                                        Birinchi Loyiha Yaratish
+                                    </button>
+                                </div>` :
+                                `<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    ${this.state.projects.map(p => this.renderProjectCard(p)).join('')}
+                                </div>`
+                            }
+                        </div>
+                    </section>
+                `;
+            },
+
+            renderProjectCard(project) {
+                return `
+                    <div class="bg-white dark:bg-gray-900 dark:border dark:border-blue-500/20 rounded-xl overflow-hidden hover-lift transition-all duration-300 shadow-lg dark:shadow-2xl">
+                        <div class="h-32 gradient-bg flex items-end p-4 relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-20 dark:opacity-40" style="background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px;"></div>
+                            <h3 class="text-white font-bold text-lg relative z-10">${project.area}m²</h3>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
+                                📅 ${new Date(project.created_at).toLocaleDateString('uz-UZ')}
+                            </p>
+                            <div class="grid grid-cols-2 gap-2 mb-5">
+                                <span class="bg-blue-100 dark:bg-blue-900/30 dark:border dark:border-blue-500/30 text-blue-800 dark:text-blue-300 px-3 py-2 rounded-lg text-sm font-medium flex items-center">🚪 ${project.rooms} xona</span>
+                                <span class="bg-green-100 dark:bg-green-900/30 dark:border dark:border-green-500/30 text-green-800 dark:text-green-300 px-3 py-2 rounded-lg text-sm font-medium flex items-center">🚿 ${project.bathrooms}</span>
+                            </div>
+                            <button class="w-full py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium">Ko'rish</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderCreateForm() {
+                return `
+                    <section class="py-16 dark:bg-gradient-to-b dark:from-gray-900 dark:to-gray-800">
+                        <div class="max-w-2xl mx-auto px-4">
+                            <div class="bg-white dark:bg-gray-900 dark:border dark:border-blue-500/20 rounded-xl p-8 shadow-lg dark:shadow-2xl">
+                                <h2 class="text-3xl font-bold mb-8 dark:text-white text-gray-900">Yangi Loyiha Yaratish</h2>
+                                <form onsubmit="return app.submitForm(event)" class="space-y-6">
+                                    <div>
+                                        <label class="block text-sm font-medium dark:text-white mb-2 text-gray-700">Uy Maydoni (m²)</label>
+                                        <input type="number" name="area" min="10" value="150" class="w-full px-4 py-2.5 border dark:border-blue-500/30 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" required>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium dark:text-white mb-2 text-gray-700">Xonalar Soni</label>
+                                            <input type="number" name="rooms" min="1" value="4" class="w-full px-4 py-2.5 border dark:border-blue-500/30 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium dark:text-white mb-2 text-gray-700">Vanna Xonalari</label>
+                                            <input type="number" name="bathrooms" min="1" value="2" class="w-full px-4 py-2.5 border dark:border-blue-500/30 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" required>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3 bg-gray-50 dark:bg-gray-800/50 dark:border dark:border-blue-500/20 p-4 rounded-lg">
+                                        <label class="flex items-center cursor-pointer hover:opacity-80 transition">
+                                            <input type="checkbox" name="has_garage" class="w-4 h-4 rounded accent-purple-600">
+                                            <span class="ml-3 dark:text-white text-gray-700 font-medium">Garaj mavjud</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer hover:opacity-80 transition">
+                                            <input type="checkbox" name="has_terrace" class="w-4 h-4 rounded accent-purple-600">
+                                            <span class="ml-3 dark:text-white text-gray-700 font-medium">Terrasa mavjud</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer hover:opacity-80 transition">
+                                            <input type="checkbox" name="has_pool" class="w-4 h-4 rounded accent-purple-600">
+                                            <span class="ml-3 dark:text-white text-gray-700 font-medium">Basseyn mavjud</span>
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="w-full py-3 gradient-bg text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                        ✓ Loyiha Yaratish
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                `;
+            },
+
+            renderLogin() {
+                return `
+                    <section class="py-16">
+                        <div class="max-w-md mx-auto px-4">
+                            <div class="bg-white dark:bg-gray-700 rounded-lg p-8 shadow-lg">
+                                <h2 class="text-3xl font-bold mb-8 text-center dark:text-white">Kirish</h2>
+                                <form class="space-y-4">
+                                    <input type="email" placeholder="Email" class="w-full px-4 py-2 border dark:border-gray-600 dark:bg-gray-600 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                                    <input type="password" placeholder="Parol" class="w-full px-4 py-2 border dark:border-gray-600 dark:bg-gray-600 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                                    <button type="submit" class="w-full py-2 gradient-bg text-white font-bold rounded-lg">Kirish</button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                `;
+            },
+
+            renderProfile() {
+                return `
+                    <section class="py-16">
+                        <div class="max-w-2xl mx-auto px-4">
+                            <div class="bg-white dark:bg-gray-700 rounded-lg p-8 shadow-lg">
+                                <h2 class="text-3xl font-bold mb-6 dark:text-white">Mening Profil</h2>
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <p class="text-gray-600 dark:text-gray-400">Foydalanuvchi:</p>
+                                        <p class="text-lg font-bold dark:text-white">${this.state.user?.username || 'Nomalum'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 dark:text-gray-400">Email:</p>
+                                        <p class="text-lg font-bold dark:text-white">${this.state.user?.email || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                `;
+            },
+
+            renderFooter() {
+                return `
+                    <footer class="bg-gray-900 text-white py-8 mt-16">
+                        <div class="max-w-7xl mx-auto px-4 text-center">
+                            <p>© 2026 Uy Qurilishi - Barcha huquqlar himoyalangan</p>
+                        </div>
+                    </footer>
+                `;
+            },
+
+            // Form Submission
+            submitForm(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    area: parseInt(formData.get('area')),
+                    rooms: parseInt(formData.get('rooms')),
+                    bathrooms: parseInt(formData.get('bathrooms')),
+                    has_garage: formData.get('has_garage') ? true : false,
+                    has_terrace: formData.get('has_terrace') ? true : false,
+                    has_pool: formData.get('has_pool') ? true : false,
+                };
+                this.createProject(data);
+                return false;
+            },
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>

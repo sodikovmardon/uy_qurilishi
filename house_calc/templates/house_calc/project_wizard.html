@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Yangi loyiha{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="grid-template-columns:minmax(0,1fr) 260px;">
+  <div class="glass-card dots hero-copy" style="min-height:200px;">
+    <span class="eyebrow">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Yangi hisob-kitob
+    </span>
+    <h1 style="font-size:2.35rem;">Uy smetasini tez yig'ing</h1>
+    <p>Maydon, xona rejasi va qo'shimcha imkoniyatlarni tanlang. O'ng tomonda materiallar va xarajatlar jonli yangilanadi.</p>
+  </div>
+  <div class="glass-card padded" style="display:grid;gap:12px;align-content:start;">
+    <div>
+      <h3 style="margin:0;color:var(--heading);font-size:1rem;display:flex;align-items:center;gap:8px;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Hisoblash holati
+      </h3>
+      <p style="margin:4px 0 0;color:var(--muted);font-size:0.82rem;" id="step-label">Ma'lumotlarni kiriting</p>
+    </div>
+    <span class="status-pill green" id="step-pct">0%</span>
+    <div class="progress-track">
+      <div id="progress-bar" class="progress-bar" style="width:0%;"></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:18px;align-items:start;margin-top:18px;">
+  <div class="glass-card dots padded">
+    <form method="post" id="project-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="alert alert-error" style="margin-bottom:16px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div style="display:grid;gap:15px;">
+        <div class="field">
+          <label for="{{ form.user_name.id_for_label }}">Mijoz yoki loyiha nomi</label>
+          {{ form.user_name }}
+          {% if form.user_name.errors %}<span style="color:var(--danger);font-size:0.82rem;">{{ form.user_name.errors }}</span>{% endif %}
+        </div>
+
+        <div class="two-cols">
+          <div class="field">
+            <label for="{{ form.area.id_for_label }}">Uy maydoni (m²)</label>
+            {{ form.area }}
+            {% if form.area.errors %}<span style="color:var(--danger);font-size:0.82rem;">{{ form.area.errors }}</span>{% endif %}
+          </div>
+          <div class="field">
+            <label for="{{ form.rooms.id_for_label }}">Xonalar soni</label>
+            {{ form.rooms }}
+            {% if form.rooms.errors %}<span style="color:var(--danger);font-size:0.82rem;">{{ form.rooms.errors }}</span>{% endif %}
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="{{ form.bathrooms.id_for_label }}">Vanna xonalari</label>
+          {{ form.bathrooms }}
+          {% if form.bathrooms.errors %}<span style="color:var(--danger);font-size:0.82rem;">{{ form.bathrooms.errors }}</span>{% endif %}
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;">
+          <label class="check-card">
+            {{ form.has_garage }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="22" height="19" rx="2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                Garaj
+              </strong>
+              <small>Avtomobil uchun joy</small>
+            </span>
+          </label>
+          <label class="check-card">
+            {{ form.has_terrace }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/></svg>
+                Terrasa
+              </strong>
+              <small>Dam olish zonasi</small>
+            </span>
+          </label>
+          <label class="check-card">
+            {{ form.has_pool }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 20c2-2 4-4 6-2 2 2 4 4 6 0 2-2 4-4 6 2"/><path d="M2 12c2-2 4-4 6-2 2 2 4 4 6 0 2-2 4-4 6 2"/></svg>
+                Basseyn
+              </strong>
+              <small>Premium tashqi zona</small>
+            </span>
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:2px;">
+          <a href="/" class="btn" style="flex:1;">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Bekor qilish
+          </a>
+          <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Hisoblash va saqlash
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="glass-card dots live-panel" style="padding:48px 20px 20px;">
+    <h2>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:22px;height:22px;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Jonli smeta
+    </h2>
+    <p style="margin:0;color:var(--muted);font-size:0.82rem;">Kiritilgan ma'lumotlar asosida tezkor taxmin.</p>
+
+    <div class="glass-card" style="padding:12px;border-color:var(--line);background:var(--tile-bg);" id="live-advice">
+      Maydonni kiriting, materiallar avtomatik hisoblanadi.
+    </div>
+
+    <div>
+      <div class="live-row"><span>G'isht</span><strong id="live-bricks">0 dona</strong></div>
+      <div class="live-row"><span>Sement</span><strong id="live-cement">0 t</strong></div>
+      <div class="live-row"><span>Qum</span><strong id="live-sand">0 m³</strong></div>
+    </div>
+
+    <div class="live-total">
+      <span>Taxminiy jami xarajat</span>
+      <strong id="live-total-cost">$0</strong>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('project-form');
+  const formatter = new Intl.NumberFormat('uz-UZ');
+  const UZS_PER_USD = 12141.94;
+
+  function numberValue(id, fallback = 0) {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    const value = Number.parseFloat(el.value);
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  function isChecked(id) {
+    const el = document.getElementById(id);
+    return el ? el.checked : false;
+  }
+
+  function formatUsdFromUzs(value) {
+    if (!value || value <= 0) return '$0';
+    const usd = value / UZS_PER_USD;
+    return '$' + Math.round(usd).toLocaleString('en-US') + ' USD';
+  }
+
+  function updateProgress() {
+    const area = numberValue('id_area', 0);
+    const rooms = numberValue('id_rooms', 0);
+    const bathrooms = numberValue('id_bathrooms', 0);
+    let filled = 0;
+    if (area > 0) filled++;
+    if (rooms > 0) filled++;
+    if (bathrooms > 0) filled++;
+    if (isChecked('id_has_garage') || isChecked('id_has_terrace') || isChecked('id_has_pool')) filled++;
+    const percent = Math.min(100, Math.round((filled / 4) * 100));
+    const bar = document.getElementById('progress-bar');
+    const pct = document.getElementById('step-pct');
+    const label = document.getElementById('step-label');
+    if (bar) bar.style.width = percent + '%';
+    if (pct) pct.textContent = percent + '%';
+    if (label) label.textContent = percent >= 100 ? 'Hisoblashga tayyor' : 'Ma\'lumotlar to\'ldirilmoqda';
+  }
+
+  function calculate() {
+    const area = numberValue('id_area', 0);
+    const rooms = numberValue('id_rooms', 1);
+    const bathrooms = numberValue('id_bathrooms', 1);
+    const hasGarage = isChecked('id_has_garage');
+    const hasTerrace = isChecked('id_has_terrace');
+    const hasPool = isChecked('id_has_pool');
+
+    const wallArea = Math.sqrt(area / 1 || 100) * 4 * 3 * 0.85;
+    const bricks = Math.max(0, Math.floor(wallArea * 400));
+    const cement = Number(((bricks / 1000) * 0.5).toFixed(1));
+    const sand = Number((cement * 3).toFixed(1));
+    const extras = (hasGarage ? 20000000 : 0) + (hasTerrace ? 15000000 : 0) + (hasPool ? 50000000 : 0);
+    const totalCost = bricks * 800 + cement * 450000 + sand * 120000 + extras;
+
+    document.getElementById('live-bricks').textContent = formatter.format(bricks) + ' dona';
+    document.getElementById('live-cement').textContent = cement.toFixed(1) + ' t';
+    document.getElementById('live-sand').textContent = sand.toFixed(1) + ' m³';
+    document.getElementById('live-total-cost').textContent = formatUsdFromUzs(totalCost);
+
+    const advice = document.getElementById('live-advice');
+    if (area > 0) {
+      advice.textContent = area + ' m² uchun ' + formatter.format(bricks) + ' dona g\'isht va ' + cement.toFixed(1) + ' t sement taxmin qilindi.';
+    } else {
+      advice.textContent = 'Maydonni kiriting, materiallar avtomatik hisoblanadi.';
+    }
+
+    updateProgress();
+  }
+
+  if (form) {
+    form.addEventListener('input', calculate);
+    form.addEventListener('change', calculate);
+    calculate();
+  }
+</script>
+{% endblock %}

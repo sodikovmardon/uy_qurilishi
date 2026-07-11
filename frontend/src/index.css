@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-apple-blue: #007AFF;
+  --color-apple-blue-dark: #0051A8;
+  --color-neon-blue: #5AC8FA;
+  --color-neon-green: #34C759;
+  --color-neon-purple: #AF52DE;
+  --color-neon-orange: #FF9500;
+}
+
+:root {
+  --bg-canvas: #F5F5F7;
+  --bg-panel: rgba(255, 255, 255, 0.72);
+  --bg-card: rgba(255, 255, 255, 0.82);
+  --border-panel: rgba(255, 255, 255, 0.5);
+  --border-card: rgba(0, 0, 0, 0.06);
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --shadow-panel: 0 20px 50px rgba(0, 0, 0, 0.02);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --hover-overlay: rgba(0, 0, 0, 0.04);
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.1);
+  --apple-red: #FF5F57;
+  --apple-yellow: #FEBC2E;
+  --apple-green: #28C840;
+}
+
+.dark {
+  --bg-canvas: #121212;
+  --bg-panel: rgba(45, 45, 45, 0.72);
+  --bg-card: rgba(50, 50, 50, 0.82);
+  --border-panel: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.06);
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --shadow-panel: 0 20px 50px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.3);
+  --hover-overlay: rgba(255, 255, 255, 0.06);
+  --input-bg: #2D2D2D;
+  --input-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  overscroll-behavior: contain;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-20px) scale(1.02); }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}

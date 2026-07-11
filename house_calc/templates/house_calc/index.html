@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Uy Qurilish Kalkulyatori{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+  <div class="glass-card dots hero-copy">
+    <span class="eyebrow">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Ishonchli hisob
+    </span>
+    <h1>Uy qurish materiallarini aniq hisoblang</h1>
+    <p>AI yordamida material miqdori, smeta va 3D prevyewlarni oling. Quruvchilar va uy egalari uchun ishonchli platforma.</p>
+    <div class="hero-actions">
+      <a href="#calculator" class="btn btn-primary btn-lg">Hisoblashni boshlash</a>
+      <a href="/projects/" class="btn btn-lg">Loyihalarni ko'rish</a>
+    </div>
+  </div>
+
+  <div class="glass-card padded d-flex" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:20px;">
+    <div class="metric-card" style="border:none;background:var(--tile-bg);box-shadow:none;">
+      <div class="metric-icon" style="font-size:1.5rem;">🏗️</div>
+      <strong>{{ total_projects }}</strong>
+      <small>Bajarilgan loyihalar</small>
+    </div>
+    <div class="metric-card" style="border:none;background:var(--tile-bg);box-shadow:none;">
+      <div class="metric-icon" style="font-size:1.5rem;">🌐</div>
+      <strong>{{ web_projects }}</strong>
+      <small>Web loyihalar</small>
+    </div>
+    <div class="metric-card" style="border:none;background:var(--tile-bg);box-shadow:none;">
+      <div class="metric-icon" style="font-size:1.5rem;">⚡</div>
+      <strong>99%</strong>
+      <small>Aniqlik darajasi</small>
+    </div>
+    <div class="metric-card" style="border:none;background:var(--tile-bg);box-shadow:none;">
+      <div class="metric-icon" style="font-size:1.5rem;">🤖</div>
+      <strong>24/7</strong>
+      <small>AI yordam</small>
+    </div>
+  </div>
+</div>
+
+<div id="calculator" class="section-head" style="margin-top:28px;">
+  <div>
+    <h2>Kalkulyator</h2>
+    <p>Loyiha ma'lumotlarini kiriting va natijani oling</p>
+  </div>
+  <a href="/create/" class="btn btn-sm btn-ghost">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Batafsil hisob
+  </a>
+</div>
+
+<div class="hero-section" style="grid-template-columns:minmax(0,1.05fr) minmax(340px,0.95fr);">
+  <div class="glass-card dots padded">
+    {% if project_created %}
+    <div class="alert alert-success" style="margin-bottom:16px;">
+      <strong>✅ Loyiha saqlandi!</strong> Natijalar quyida ko'rsatilgan.
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'house_calc:home' %}" id="project-form">
+      {% csrf_token %}
+
+      <div style="display:grid;gap:15px;">
+        <div class="field">
+          <label for="{{ form.user_name.id_for_label }}">Mijoz nomi (ixtiyoriy)</label>
+          {{ form.user_name }}
+        </div>
+
+        <div class="field">
+          <label for="{{ form.area.id_for_label }}">Uy maydoni (m²)</label>
+          {{ form.area }}
+        </div>
+
+        <div class="two-cols">
+          <div class="field">
+            <label for="{{ form.rooms.id_for_label }}">Xonalar soni</label>
+            {{ form.rooms }}
+          </div>
+          <div class="field">
+            <label for="{{ form.bathrooms.id_for_label }}">Vanna xonalari</label>
+            {{ form.bathrooms }}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;">
+          <label class="check-card">
+            {{ form.has_garage }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="22" height="19" rx="2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><line x1="9" y1="3" x2="9" y2="8"/><line x1="15" y1="3" x2="15" y2="8"/></svg>
+                Garaj
+              </strong>
+              <small>Avtomobil uchun joy</small>
+            </span>
+          </label>
+          <label class="check-card">
+            {{ form.has_terrace }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M8 10v11"/><path d="M16 10v11"/></svg>
+                Terrasa
+              </strong>
+              <small>Dam olish zonasi</small>
+            </span>
+          </label>
+          <label class="check-card">
+            {{ form.has_pool }}
+            <span>
+              <strong>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 20c2-2 4-4 6-2 2 2 4 4 6 0 2-2 4-4 6 2"/><path d="M2 12c2-2 4-4 6-2 2 2 4 4 6 0 2-2 4-4 6 2"/><path d="M2 4c2-2 4-4 6-2 2 2 4 4 6 0 2-2 4-4 6 2"/></svg>
+                Basseyn
+              </strong>
+              <small>Premium qulaylik</small>
+            </span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:2px;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Hisoblash
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {% if selected_project %}
+  <div class="glass-card padded live-panel" style="position:static;">
+    <h2>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:22px;height:22px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Loyiha natijasi
+    </h2>
+    <p style="color:var(--muted);font-size:0.88rem;margin:0;">
+      #{{ selected_project.pk }} · {{ selected_project.created_at|date:"d M, Y" }}
+    </p>
+
+    {% if selected_project.preview_image %}
+    <div style="border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);">
+      <img src="{{ selected_project.preview_image }}" alt="3D Preview">
+    </div>
+    {% endif %}
+
+    <div>
+      <div class="live-row"><span>Maydon</span><strong>{{ selected_project.area }} m²</strong></div>
+      <div class="live-row"><span>Xonalar</span><strong>{{ selected_project.rooms }}</strong></div>
+      <div class="live-row"><span>Vanna</span><strong>{{ selected_project.bathrooms }}</strong></div>
+      <div class="live-row"><span>Garaj</span><strong>{{ selected_project.has_garage|yesno:"Ha,Yo'q" }}</strong></div>
+      <div class="live-row"><span>Terrasa</span><strong>{{ selected_project.has_terrace|yesno:"Ha,Yo'q" }}</strong></div>
+      <div class="live-row" style="border:none;"><span>Basseyn</span><strong>{{ selected_project.has_pool|yesno:"Ha,Yo'q" }}</strong></div>
+    </div>
+
+    <div class="live-total" style="border-top-color:var(--line);">
+      <span>G'isht</span>
+      <strong>{{ selected_project.bricks }}</strong>
+    </div>
+    <div class="live-row"><span>Sement</span><strong>{{ selected_project.cement }} t</strong></div>
+    <div class="live-row" style="border:none;"><span>Qum</span><strong>{{ selected_project.sand }} m³</strong></div>
+
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <a href="{% url 'house_calc:project_detail' selected_project.pk %}" class="btn btn-block" style="flex:1;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Batafsil
+      </a>
+      <a href="{% url 'house_calc:project_pdf' selected_project.pk %}" class="btn btn-primary btn-block" style="flex:1;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF yuklab olish
+      </a>
+    </div>
+
+    {% if selected_project.ai_summary %}
+    <div style="padding:12px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--tile-bg);margin-top:8px;">
+      <p style="margin:0;color:var(--text);font-size:0.88rem;white-space:pre-line;">{{ selected_project.ai_summary|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="glass-card" style="display:grid;place-items:center;gap:12px;padding:40px;text-align:center;min-height:300px;">
+    <div style="font-size:3rem;">🏠</div>
+    <h3 style="margin:0;color:var(--heading);font-size:1.2rem;">Loyiha tanlanmagan</h3>
+    <p style="margin:0;color:var(--muted);font-size:0.92rem;max-width:380px;">Hisoblash uchun formani to'ldiring va natijalar shu yerda ko'rinadi.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if recent_projects %}
+<div class="section-head" style="margin-top:28px;">
+  <div>
+    <h2>So'nggi loyihalar</h2>
+    <p>Oxirgi 12 ta loyiha</p>
+  </div>
+  <a href="/projects/" class="btn btn-sm btn-ghost">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    Barchasi
+  </a>
+</div>
+
+<div class="project-grid" style="margin-bottom:28px;">
+  {% for project in recent_projects %}
+  <a href="{% url 'house_calc:home' %}?project={{ project.pk }}" class="project-card">
+    <div class="project-image">
+      <div style="display:grid;place-items:center;height:100%;color:var(--muted);font-size:0.88rem;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:32px;height:32px;opacity:0.3;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <span class="price-badge">{{ project.rooms }} xona</span>
+    </div>
+    <div class="project-info">
+      <strong>{{ project.area }} m² Loyiha</strong>
+      <small>{{ project.user_name|default:"Anonim foydalanuvchi" }}</small>
+      <div class="chip-row">
+        <span class="chip">{{ project.rooms }} xona</span>
+        <span class="chip">{{ project.bathrooms }} vanna</span>
+        <span class="chip accent">{{ project.recommended_storeys }} qavat</span>
+      </div>
+      <div class="mini-metrics">
+        <span>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8h16"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg>
+          {{ project.bricks }}
+        </span>
+        <span>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          {{ project.cement }}t
+        </span>
+        <span>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/></svg>
+          {{ project.sand }}m³
+        </span>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
