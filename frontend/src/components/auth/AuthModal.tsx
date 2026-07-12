@@ -1,21 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { api } from '../../api/client';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onAuthSuccess?: (user: { id: number; name: string; phone: string }) => void;
 }
 
 type AuthTab = 'login' | 'register';
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [tab, setTab] = useState<AuthTab>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +35,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setPhone('');
+      setPassword('');
+      setName('');
+      setErrors({});
+      setTab('login');
+    }
+  }, [isOpen]);
+
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!phone.match(/^\+?\d{9,12}$/)) {
@@ -47,10 +60,24 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     return Object.keys(errs).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    onClose();
+    setLoading(true);
+    try {
+      if (tab === 'register') {
+        const user = await api.signup({ name, phone, password });
+        onAuthSuccess?.(user);
+      } else {
+        const user = await api.login(phone, password);
+        onAuthSuccess?.(user);
+      }
+      onClose();
+    } catch (err: any) {
+      setErrors({ form: err.message || 'Xatolik yuz berdi' });
+    } finally {
+      setLoading(false);
+    }
   }
 
   function switchTab(t: AuthTab) {
@@ -158,6 +185,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 pt-4 space-y-4">
+              {errors.form && (
+                <p className="text-xs text-red-500 text-center">{errors.form}</p>
+              )}
+
               {tab === 'register' && (
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
@@ -223,11 +254,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               <motion.button
                 type="submit"
+                disabled={loading}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.97 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#007AFF] to-[#0051A8] shadow-[0_4px_14px_rgba(0,122,255,0.35)] hover:shadow-[0_6px_20px_rgba(0,122,255,0.5)] transition-all"
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#007AFF] to-[#0051A8] shadow-[0_4px_14px_rgba(0,122,255,0.35)] hover:shadow-[0_6px_20px_rgba(0,122,255,0.5)] transition-all disabled:opacity-50"
               >
-                {tab === 'login' ? 'Kirish' : 'Ro\'yxatdan o\'tish'}
+                {loading ? 'Yuklanmoqda...' : tab === 'login' ? 'Kirish' : "Ro'yxatdan o'tish"}
               </motion.button>
             </form>
           </motion.div>

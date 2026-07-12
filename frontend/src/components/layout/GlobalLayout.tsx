@@ -9,9 +9,11 @@ interface GlobalLayoutProps {
   activePage: string;
   onNavigate: (page: NavLink['id']) => void;
   onAuthOpen: () => void;
+  user?: { id: number; name: string; phone: string } | null;
+  onLogout?: () => void;
 }
 
-export function GlobalLayout({ children, activePage, onNavigate, onAuthOpen }: GlobalLayoutProps) {
+export function GlobalLayout({ children, activePage, onNavigate, onAuthOpen, user, onLogout }: GlobalLayoutProps) {
   return (
     <div
       className="min-h-screen flex flex-col transition-colors duration-300"
@@ -29,7 +31,7 @@ export function GlobalLayout({ children, activePage, onNavigate, onAuthOpen }: G
         transition={{ duration: 0.3 }}
       >
         <TrafficLights />
-        <Navbar active={activePage} onNavigate={onNavigate} onAuthOpen={onAuthOpen} />
+        <Navbar active={activePage} onNavigate={onNavigate} onAuthOpen={onAuthOpen} user={user} onLogout={onLogout} />
       </motion.header>
 
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-8 py-4 md:py-6">

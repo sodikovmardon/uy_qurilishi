@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FolderOpen, Globe, Target, Bot, type LucideIcon } from 'lucide-react';
 import { AnimatedCounter } from '../ui/AnimatedCounter';
 import type { StatItem } from '../../types';
+import { api } from '../../api/client';
 
 const iconMap: Record<StatItem['icon'], LucideIcon> = {
   FolderOpen,
@@ -9,13 +11,6 @@ const iconMap: Record<StatItem['icon'], LucideIcon> = {
   Target,
   Bot,
 };
-
-const stats: StatItem[] = [
-  { label: 'Bajarilgan loyihalar', value: 28, icon: 'FolderOpen', accent: 'from-blue-500 to-blue-600' },
-  { label: 'Web loyihalar', value: 22, icon: 'Globe', accent: 'from-emerald-500 to-emerald-600' },
-  { label: 'Aniqlik', value: 99, icon: 'Target', accent: 'from-amber-500 to-amber-600' },
-  { label: 'AI yordam', value: 150, icon: 'Bot', accent: 'from-purple-500 to-purple-600' },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,6 +30,24 @@ const cardVariants = {
 };
 
 export function StatCards() {
+  const [stats, setStats] = useState<StatItem[]>([
+    { label: 'Bajarilgan loyihalar', value: 0, icon: 'FolderOpen', accent: 'from-blue-500 to-blue-600' },
+    { label: 'Web loyihalar', value: 0, icon: 'Globe', accent: 'from-emerald-500 to-emerald-600' },
+    { label: 'Aniqlik', value: 99, icon: 'Target', accent: 'from-amber-500 to-amber-600' },
+    { label: 'AI yordam', value: 0, icon: 'Bot', accent: 'from-purple-500 to-purple-600' },
+  ]);
+
+  useEffect(() => {
+    api.getDashboard().then(data => {
+      setStats([
+        { label: 'Bajarilgan loyihalar', value: data.total_projects, icon: 'FolderOpen', accent: 'from-blue-500 to-blue-600' },
+        { label: 'Web loyihalar', value: data.web_projects, icon: 'Globe', accent: 'from-emerald-500 to-emerald-600' },
+        { label: 'Aniqlik', value: 99, icon: 'Target', accent: 'from-amber-500 to-amber-600' },
+        { label: 'AI yordam', value: data.ai_assisted, icon: 'Bot', accent: 'from-purple-500 to-purple-600' },
+      ]);
+    });
+  }, []);
+
   return (
     <motion.div
       className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"

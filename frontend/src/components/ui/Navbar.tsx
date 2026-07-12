@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LogIn, HardHat } from 'lucide-react';
+import { LogIn, LogOut, HardHat, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import type { NavLink } from '../../types';
 
@@ -13,9 +13,11 @@ interface NavbarProps {
   active: string;
   onNavigate: (id: NavLink['id']) => void;
   onAuthOpen: () => void;
+  user?: { id: number; name: string; phone: string } | null;
+  onLogout?: () => void;
 }
 
-export function Navbar({ active, onNavigate, onAuthOpen }: NavbarProps) {
+export function Navbar({ active, onNavigate, onAuthOpen, user, onLogout }: NavbarProps) {
   return (
     <nav
       className="flex items-center justify-between px-6 py-2 border-b border-[var(--border-card)]"
@@ -61,16 +63,37 @@ export function Navbar({ active, onNavigate, onAuthOpen }: NavbarProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <ThemeToggle />
-        <motion.button
-          onClick={onAuthOpen}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium bg-[#007AFF] text-white hover:bg-[#0051A8] transition-colors"
-        >
-          <LogIn className="w-4 h-4" />
-          Kirish
-        </motion.button>
+        {user ? (
+          <div className="flex items-center gap-2">
+            <span className="text-sm hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
+              <User className="w-3.5 h-3.5 inline mr-1" />
+              {user.name}
+            </span>
+            <motion.button
+              onClick={onLogout}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+              style={{
+                color: 'var(--text-secondary)',
+                borderColor: 'var(--border-card)',
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Chiqish</span>
+            </motion.button>
+          </div>
+        ) : (
+          <motion.button
+            onClick={onAuthOpen}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium bg-[#007AFF] text-white hover:bg-[#0051A8] transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            Kirish
+          </motion.button>
+        )}
       </div>
     </nav>
   );
