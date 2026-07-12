@@ -38,7 +38,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'house_calc.apps.HouseBuildConfig',
+    'rest_framework',
+    'drf_spectacular',
+    'api.apps.ApiConfig',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Uy Qurilishi API',
+    'DESCRIPTION': 'Uy qurilishi materiallarini hisoblash va loyiha boshqaruvi API',
+    'VERSION': '1.0.0',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
