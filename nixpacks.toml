@@ -1,5 +1,8 @@
-[variables]
-# Node 20 + bundled npm 10 install Tailwind's platform bindings (@tailwindcss/oxide)
-# correctly; npm 9 (default with Node 18) skips optional deps on fresh installs
-# (npm/cli#4828), which breaks the vite build.
-NIXPACKS_NODE_VERSION = "20"
+[phases.setup]
+nixPkgs = ["python312", "python312Packages.pip"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt", "npm i"]
+
+[phases.build]
+cmds = ["npm run build", "python manage.py collectstatic --noinput"]
