@@ -6,13 +6,20 @@ function easeOutExpo(t: number): number {
 
 export function useCountAnimation(
   target: number,
-  duration = 1000
+  duration = 1000,
+  active = true
 ): number {
   const [current, setCurrent] = useState(0);
   const prevTarget = useRef(0);
   const raf = useRef<number | null>(null);
 
   useEffect(() => {
+    if (!active) {
+      setCurrent(0);
+      prevTarget.current = 0;
+      return;
+    }
+
     const start = prevTarget.current;
     const diff = target - start;
     if (diff === 0) return;
@@ -37,7 +44,7 @@ export function useCountAnimation(
       if (raf.current !== null) cancelAnimationFrame(raf.current);
       prevTarget.current = target;
     };
-  }, [target, duration]);
+  }, [target, duration, active]);
 
   return current;
 }

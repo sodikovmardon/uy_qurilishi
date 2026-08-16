@@ -3,12 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Uy Loyiha Studio - macOS Construction Studio</title>
-    <meta name="description" content="macOS-style home construction cost estimation platform with AI-powered recommendations" />
-    <meta name="theme-color" content="#007aff" />
+    <title>Uy Loyiha Studio - Qurilish Materiallar Kalkulyatori</title>
+    <meta name="description" content="Uy qurish uchun kerakli qurilish materiallarini tez va aniq hisoblang. G'isht, tsement, qum va qavatlar miqdori bo'yicha smeta tuzing, loyihalarni saqlang va taqqoslang." />
+    <meta name="theme-color" content="#0a84ff" />
+    <meta property="og:site_name" content="Uy Loyiha Studio" />
+    <meta property="og:title" content="Uy Loyiha Studio - Qurilish Materiallar Kalkulyatori" />
+    <meta property="og:description" content="Uy qurish uchun kerakli qurilish materiallarini tez va aniq hisoblang. G'isht, tsement, qum va qavatlar miqdori bo'yicha smeta tuzing." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="uz_UZ" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Uy Loyiha Studio - Qurilish Materiallar Kalkulyatori" />
+    <meta name="twitter:description" content="Uy qurish uchun kerakli qurilish materiallarini tez va aniq hisoblang va smeta tuzing." />
     <style>
-      html { background: #f5f5f7; }
+      /* Base background matches Qurilish Bazasi before React mounts — no flash. */
+      html { background: #000000; }
+      body { background: #000000; margin: 0; }
     </style>
+    <script>
+      /* Resolve theme before first paint so the dark canvas is applied immediately. */
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          var dark;
+          if (t === 'light') dark = false;
+          else if (t === 'dark' || t === null || t === '') dark = true; /* unified dark default */
+          else dark = window.matchMedia('(prefers-color-scheme: dark)').matches; /* 'system' */
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

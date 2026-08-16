@@ -12,14 +12,14 @@ export default defineConfig({
   root: 'frontend',
   build: {
     outDir: '../house_calc/static/react',
-    emptyOutDir: false,
+    emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
       input: resolve(rootDir, 'frontend/index.html'),
       output: {
-        entryFileNames: 'app.js',
-        chunkFileNames: 'chunks/[name].js',
-        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: 'assets/app-[hash].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
       },
     },
   },

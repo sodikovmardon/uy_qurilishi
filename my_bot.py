@@ -17,8 +17,10 @@ from house_calc.layout_utils import estimate_storeys, planning_note, summarize_r
 from house_calc.pdf import build_project_pdf_bytes
 from house_calc.utils import calculate_materials
 
-# API Tokenni o'zgartirishni unutmang
-API_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '8645210389:AAHpwBLd6soVAwuo8-fpld2SCXylnk1dFD0')
+# Bot tokeni faqat muhit o'zgaruvchisidan olinadi (hech qachon kodga yozilmaydi).
+API_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+if not API_TOKEN:
+    raise SystemExit("TELEGRAM_BOT_TOKEN muhit o'zgaruvchisi o'rnatilmagan")
 DB_PATH = Path(__file__).resolve().parent / 'db.sqlite3'
 
 # Loglarni sozlash

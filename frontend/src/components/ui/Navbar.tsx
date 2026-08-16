@@ -1,100 +1,344 @@
-import { motion } from 'framer-motion';
-import { LogIn, LogOut, HardHat, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, HardHat, Heart, LogIn, LogOut, Menu, Plus, Settings, User as UserIcon, Wallet, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import type { NavLink } from '../../types';
+import { t } from '../../lib/i18n';
+import { STORE_URL } from '../../config/links';
 
-const links: NavLink[] = [
-  { id: 'home', label: 'Bosh sahifa' },
-  { id: 'projects', label: 'Loyihalar' },
-  { id: 'new-project', label: 'Yangi loyiha' },
-];
+interface User {
+  id: number;
+  name: string;
+  phone: string;
+}
 
 interface NavbarProps {
-  active: string;
-  onNavigate: (id: NavLink['id']) => void;
   onAuthOpen: () => void;
-  user?: { id: number; name: string; phone: string } | null;
+  user?: User | null;
   onLogout?: () => void;
 }
 
-export function Navbar({ active, onNavigate, onAuthOpen, user, onLogout }: NavbarProps) {
+/** Brand mark — clean SVG house icon. */
+function HouseIcon() {
   return (
-    <nav
-      className="flex items-center justify-between px-6 py-2 border-b border-[var(--border-card)]"
-      style={{ backgroundColor: 'var(--bg-panel)', backdropFilter: 'blur(20px)' }}
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
     >
-      <div className="flex items-center gap-8">
-        <button
-          onClick={() => onNavigate('home')}
-          className="flex items-center gap-2"
-        >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#007AFF] to-[#0051A8] flex items-center justify-center">
-            <HardHat className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-            Uy Loyiha
-          </span>
-        </button>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 9.5V21h5v-6h4v6h5V9.5" />
+    </svg>
+  );
+}
 
-        <div className="hidden md:flex items-center gap-1">
-          {links.map((link) => {
-            const isActive = active === link.id;
-            return (
-              <button
-                key={link.id}
-                onClick={() => onNavigate(link.id)}
-                className="relative px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                style={{
-                  color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                }}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-pill"
-                    className="absolute inset-0 rounded-lg"
-                    style={{ backgroundColor: 'var(--hover-overlay)' }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{link.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+/** Initials avatar, e.g. "Mardon" → "M". */
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
-        {user ? (
-          <div className="flex items-center gap-2">
-            <span className="text-sm hidden sm:block" style={{ color: 'var(--text-secondary)' }}>
-              <User className="w-3.5 h-3.5 inline mr-1" />
-              {user.name}
-            </span>
-            <motion.button
-              onClick={onLogout}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-              style={{
-                color: 'var(--text-secondary)',
-                borderColor: 'var(--border-card)',
-              }}
+const NAV_LINKS: { to?: string; href?: string; label: string; end?: boolean; badge?: string }[] = [
+  { to: '/', label: t('nav.home'), end: true },
+  { to: '/kalkulyator', label: t('nav.calculator'), end: true },
+  { to: '/loyihalar', label: t('nav.projects') },
+  { href: STORE_URL, label: t('nav.store'), badge: 'Qurilish Bazasi' },
+  { to: '/yangi-loyiha', label: t('nav.new'), end: true },
+];
+
+function NavLinks({ onPick }: { onPick?: () => void }) {
+  return (
+    <>
+      {NAV_LINKS.map((link) => {
+        if (link.href) {
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={onPick}
+              className="nav-link store-link"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Chiqish</span>
-            </motion.button>
-          </div>
-        ) : (
-          <motion.button
-            onClick={onAuthOpen}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium bg-[#007AFF] text-white hover:bg-[#0051A8] transition-colors"
+              {link.label}
+              {link.badge && <span className="store-badge">{link.badge}</span>}
+            </a>
+          );
+        }
+        return (
+          <NavLink
+            key={link.to}
+            to={link.to!}
+            end={link.end}
+            onClick={onPick}
+            className={({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`}
           >
-            <LogIn className="w-4 h-4" />
-            Kirish
-          </motion.button>
+            {link.label}
+          </NavLink>
+        );
+      })}
+    </>
+  );
+}
+
+interface UserMenuProps {
+  user: User;
+  logoutConfirm: boolean;
+  onConfirmStart: () => void;
+  onConfirmCancel: () => void;
+  onLogout: () => void;
+}
+
+/** Desktop dropdown next to the avatar — closes on outside click, ESC, or item pick. */
+function UserMenu({ user, logoutConfirm, onConfirmStart, onConfirmCancel, onLogout }: UserMenuProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const toggle = () => {
+    setOpen((v) => !v);
+    if (open) onConfirmCancel();
+  };
+
+  return (
+    <div className="user-menu" ref={ref}>
+      <button
+        className="user-menu-trigger"
+        aria-label={`${user.name} — profil menyusi`}
+        aria-haspopup="true"
+        aria-expanded={open}
+        onClick={toggle}
+      >
+        <span className="user-avatar">{initials(user.name)}</span>
+        <span className="user-menu-name">{user.name}</span>
+        <ChevronDown className={`w-3.5 h-3.5 user-chevron${open ? ' is-open' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="user-dropdown"
+            role="menu"
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+          >
+            {logoutConfirm ? (
+              <div className="dropdown-confirm" role="alert">
+                <p>{t('nav.menu.logoutConfirm')}</p>
+                <div className="dropdown-confirm-actions">
+                  <button className="btn btn-danger btn-sm" onClick={onLogout}>
+                    {t('nav.menu.logoutYes')}
+                  </button>
+                  <button className="btn btn-secondary btn-sm" onClick={onConfirmCancel}>
+                    {t('nav.menu.logoutNo')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link to="/profil" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <UserIcon className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.profile')}
+                </Link>
+                <Link to="/sevimlilar" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <Heart className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.favorites')}
+                </Link>
+                <Link to="/yangi-loyiha" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.new')}
+                </Link>
+                <Link to="/qurilish" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <HardHat className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.progress')}
+                </Link>
+                <Link to="/kalkulyator?byudjet=1" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <Wallet className="w-4 h-4" aria-hidden="true" />
+                  Byudjet rejalashtiruvchi
+                </Link>
+                <div className="dropdown-divider" role="separator" />
+                <button className="dropdown-item dropdown-item-danger" role="menuitem" onClick={onConfirmStart}>
+                  <LogOut className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.signout')}
+                </button>
+              </>
+            )}
+          </motion.div>
         )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/**
+ * Top navigation bar — sticky glassmorphism, brand + links + right actions.
+ * Uses real router links (NavLink) so navigation updates the URL, keeps the
+ * active pill in sync, and stays keyboard-navigable / crawlable.
+ * Responsive: links + user actions collapse into a slide-in drawer on mobile.
+ */
+export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    setLogoutConfirm(false);
+    setMenuOpen(false);
+    onLogout?.();
+  };
+
+  return (
+    <nav className="navbar">
+      <Link to="/" className="navbar-brand" aria-label={t('nav.home')}>
+        <span className="brand-icon">
+          <HouseIcon />
+        </span>
+        <span className="brand-title">
+          <span className="brand-text">Uy Loyiha Studio</span>
+          <span className="brand-tagline">qurilish loyihalari studiyasi</span>
+        </span>
+      </Link>
+
+      <div className="nav-links">
+        <NavLinks />
       </div>
+
+      <div className="nav-actions">
+        <ThemeToggle />
+
+        {user ? (
+          <UserMenu
+            user={user}
+            logoutConfirm={logoutConfirm}
+            onConfirmStart={() => setLogoutConfirm(true)}
+            onConfirmCancel={() => setLogoutConfirm(false)}
+            onLogout={handleLogout}
+          />
+        ) : (
+          <button onClick={onAuthOpen} className="signin-btn">
+            <LogIn className="w-4 h-4" />
+            {t('nav.signin')}
+          </button>
+        )}
+
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="hamburger"
+          aria-label={menuOpen ? 'Menyuni yopish' : 'Menyuni ochish'}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-drawer"
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {menuOpen && <div className="mobile-backdrop" onClick={() => setMenuOpen(false)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        <motion.aside
+          id="mobile-drawer"
+          className="mobile-drawer"
+          initial={{ x: '100%' }}
+          animate={{ x: menuOpen ? 0 : '100%' }}
+          transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+          aria-hidden={!menuOpen}
+        >
+          <NavLinks onPick={() => setMenuOpen(false)} />
+
+          <div className="drawer-divider" />
+
+          <div className="drawer-actions">
+            {user ? (
+              <>
+                <div className="drawer-user">
+                  <span className="user-avatar">{initials(user.name)}</span>
+                  <span className="user-menu-name">{user.name}</span>
+                </div>
+                <Link to="/profil" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <UserIcon className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.profile')}
+                </Link>
+                <Link to="/sevimlilar" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <Heart className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.favorites')}
+                </Link>
+                <Link to="/yangi-loyiha" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.new')}
+                </Link>
+                <Link to="/qurilish" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <HardHat className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.progress')}
+                </Link>
+                <Link to="/kalkulyator?byudjet=1" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <Wallet className="w-4 h-4" aria-hidden="true" />
+                  Byudjet rejalashtiruvchi
+                </Link>
+                <Link to="/sozlamalar" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                  <Settings className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.settings')}
+                </Link>
+
+                {logoutConfirm ? (
+                  <div className="dropdown-confirm" role="alert">
+                    <p>{t('nav.menu.logoutConfirm')}</p>
+                    <div className="dropdown-confirm-actions">
+                      <button className="btn btn-danger btn-sm" onClick={handleLogout}>
+                        {t('nav.menu.logoutYes')}
+                      </button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => setLogoutConfirm(false)}>
+                        {t('nav.menu.logoutNo')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="dropdown-item dropdown-item-danger" onClick={() => setLogoutConfirm(true)}>
+                    <LogOut className="w-4 h-4" aria-hidden="true" />
+                    {t('nav.signout')}
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  onAuthOpen();
+                  setMenuOpen(false);
+                }}
+                className="signin-btn"
+              >
+                <LogIn className="w-4 h-4" />
+                {t('nav.signin')}
+              </button>
+            )}
+          </div>
+        </motion.aside>
+      </AnimatePresence>
     </nav>
   );
 }

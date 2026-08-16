@@ -5,11 +5,16 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from house_calc.ai_config import (
+    has_image_capability,
+    image_api_key,
+    image_api_url,
+    image_model,
+)
 from house_calc.bot_visuals import generate_house_preview
 from house_calc.layout_utils import estimate_storeys
 
 
-IMAGE_API_URL = "https://api.openai.com/v1/images/generations"
 PREVIEW_DIR = Path(__file__).resolve().parent.parent / "generated_previews"
 PREVIEW_STYLE_VERSION = 3
 
@@ -35,7 +40,7 @@ def preview_meta_path_for_product(product_id):
 
 
 def has_ai_render_capability():
-    return bool(os.getenv("OPENAI_API_KEY"))
+    return has_image_capability()
 
 
 def build_render_prompt(project):
@@ -86,7 +91,7 @@ def build_product_render_prompt(product_name):
 
 
 def generate_realistic_house_image(project):
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = image_api_key()
     if not api_key:
         return generate_house_preview(
             project.area,
@@ -97,7 +102,7 @@ def generate_realistic_house_image(project):
             project.has_terrace,
         ), "fallback"
 
-    model = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2")
+    model = image_model()
     quality = os.getenv("OPENAI_IMAGE_QUALITY", "high")
     size = os.getenv("OPENAI_IMAGE_SIZE", "1536x1024")
     payload = {
@@ -108,7 +113,7 @@ def generate_realistic_house_image(project):
         "background": "opaque",
     }
     request = urllib.request.Request(
-        IMAGE_API_URL,
+        image_api_url(),
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
@@ -134,12 +139,12 @@ def generate_realistic_house_image(project):
 
 
 def generate_product_image(product_name):
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = image_api_key()
     if not api_key:
         # No fallback for products, return None or raise error
-        raise ValueError("OPENAI_API_KEY not set for product image generation")
+        raise ValueError("AI image API key not set for product image generation")
 
-    model = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2")
+    model = image_model()
     quality = os.getenv("OPENAI_IMAGE_QUALITY", "high")
     size = os.getenv("OPENAI_IMAGE_SIZE", "1536x1024")
     payload = {
@@ -150,7 +155,7 @@ def generate_product_image(product_name):
         "background": "opaque",
     }
     request = urllib.request.Request(
-        IMAGE_API_URL,
+        image_api_url(),
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Content-Type": "application/json",

@@ -1,10 +1,12 @@
 import json
+import logging
 import os
 import urllib.error
 import urllib.request
 
+from house_calc.ai_config import groq_api_base, groq_api_key, groq_model
 
-OPENAI_API_URL = "https://api.openai.com/v1/responses"
+logger = logging.getLogger(__name__)
 
 
 def fallback_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count=1, interior_style='Modern'):
@@ -83,11 +85,9 @@ def fallback_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terr
 
 
 def generate_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count, interior_style='Modern'):
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = groq_api_key()
     if not api_key:
         return fallback_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count, interior_style)
-
-    # System prompt for ArchAI
     system_prompt = """You are ArchAI, an expert AI architectural assistant integrated into a home building cost estimation app. You specialize in residential construction, architectural design principles, material science, and sustainable building practices.
 
 CORE CAPABILITIES:
@@ -138,7 +138,7 @@ Keep responses professional, informative, and actionable. Always prioritize safe
 
 Provide architectural feedback following the specified format."""
 
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    model = groq_model()
     payload = {
         "model": model,
         "messages": [
@@ -149,7 +149,7 @@ Provide architectural feedback following the specified format."""
         "temperature": 0.7,
     }
     request = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
+        groq_api_base() + "/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Authorization": f"Bearer {api_key}",
@@ -162,57 +162,9 @@ Provide architectural feedback following the specified format."""
             ai_response = data["choices"][0]["message"]["content"].strip()
             return ai_response
     except urllib.error.HTTPError as e:
-        return {"error": f"HTTP Error: {e.code}", "details": e.read().decode("utf-8")}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-def generate_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count, interior_style='Modern'):
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
+        # Log upstream details server-side only; never surface them to users.
+        logger.warning('ai_advisor HTTP error: %s %s', e.code, e.read().decode('utf-8', 'ignore'))
         return fallback_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count, interior_style)
-
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    prompt = (
-        "You are an expert AI Architect and Construction Estimator. Your task is to analyze the user's house requirements and provide a detailed construction plan.\n\n"
-        "Input Parameters:\n\n"
-        f"Land Area: {area} sqm\n\n"
-        f"Number of Rooms: {rooms}\n\n"
-        f"Floor Count: {floor_count}\n\n"
-        f"Swimming Pool: {'Yes' if has_pool else 'No'}\n\n"
-        f"Interior Style: {interior_style}\n\n"
-        "Your Deliverables:\n\n"
-        "Material Estimation: Calculate the approximate quantity of bricks, cement (bags), steel reinforcement (tons), and concrete needed.\n\n"
-        "Technical Specifications: Suggest the best foundation type and wall thickness based on the floor count.\n\n"
-        "Timeline: Provide an estimated construction duration from groundbreaking to finish.\n\n"
-        "AI Recommendations: Suggest energy-efficient solutions (e.g., solar panels, smart glass).\n\n"
-        "Output Format: Provide the response in a structured JSON format for web integration."
-    )
-
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 1000,
-        "temperature": 0.7,
-    }
-    request = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-    )
-    try:
-        with urllib.request.urlopen(request) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            ai_response = data["choices"][0]["message"]["content"].strip()
-            # Try to parse as JSON
-            try:
-                return json.loads(ai_response)
-            except json.JSONDecodeError:
-                return {"error": "Invalid JSON response", "raw": ai_response}
-    except urllib.error.HTTPError as e:
-        return {"error": f"HTTP Error: {e.code}", "details": e.read().decode("utf-8")}
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception:
+        logger.exception('ai_advisor error')
+        return fallback_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count, interior_style)

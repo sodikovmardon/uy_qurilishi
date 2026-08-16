@@ -1,16 +1,54 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FolderOpen, Globe, Target, Bot, type LucideIcon } from 'lucide-react';
-import { AnimatedCounter } from '../ui/AnimatedCounter';
-import type { StatItem } from '../../types';
-import { api } from '../../api/client';
+import { FolderOpen, Target, PiggyBank, Bot, type LucideIcon } from 'lucide-react';
+import { useCountAnimation } from '../../hooks/useCountAnimation';
+import { useInView } from '../../hooks/useInView';
+import { t } from '../../lib/i18n';
 
-const iconMap: Record<StatItem['icon'], LucideIcon> = {
-  FolderOpen,
-  Globe,
-  Target,
-  Bot,
-};
+interface StatCardConfig {
+  id: string;
+  label: string;
+  target: number;
+  format: (value: number) => string;
+  icon: LucideIcon;
+  gradient: string;
+  live?: boolean;
+}
+
+const STATS: StatCardConfig[] = [
+  {
+    id: 'calculated',
+    label: t('stat.calculated'),
+    target: 1250,
+    format: (v) => `${v.toLocaleString('en-US')}+`,
+    icon: FolderOpen,
+    gradient: 'linear-gradient(135deg, #0A84FF, #0060DF)',
+  },
+  {
+    id: 'accuracy',
+    label: t('stat.accuracy'),
+    target: 994,
+    format: (v) => `${(v / 10).toFixed(1)}%`,
+    icon: Target,
+    gradient: 'linear-gradient(135deg, #10B981, #047857)',
+  },
+  {
+    id: 'savings',
+    label: t('stat.savings'),
+    target: 45,
+    format: (v) => `${v}-50%`,
+    icon: PiggyBank,
+    gradient: 'linear-gradient(135deg, #F59E0B, #B45309)',
+  },
+  {
+    id: 'ai',
+    label: t('stat.ai'),
+    target: 24,
+    format: (v) => `${v}/7`,
+    icon: Bot,
+    gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+    live: true,
+  },
+];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,61 +67,53 @@ const cardVariants = {
   },
 };
 
-export function StatCards() {
-  const [stats, setStats] = useState<StatItem[]>([
-    { label: 'Bajarilgan loyihalar', value: 0, icon: 'FolderOpen', accent: 'from-blue-500 to-blue-600' },
-    { label: 'Web loyihalar', value: 0, icon: 'Globe', accent: 'from-emerald-500 to-emerald-600' },
-    { label: 'Aniqlik', value: 99, icon: 'Target', accent: 'from-amber-500 to-amber-600' },
-    { label: 'AI yordam', value: 0, icon: 'Bot', accent: 'from-purple-500 to-purple-600' },
-  ]);
+const ACCENT_CLASS: Record<string, string> = {
+  calculated: 'glass-accent-blue',
+  accuracy: 'glass-accent-green',
+  savings: 'glass-accent-amber',
+  ai: 'glass-accent-purple',
+};
 
-  useEffect(() => {
-    api.getDashboard().then(data => {
-      setStats([
-        { label: 'Bajarilgan loyihalar', value: data.total_projects, icon: 'FolderOpen', accent: 'from-blue-500 to-blue-600' },
-        { label: 'Web loyihalar', value: data.web_projects, icon: 'Globe', accent: 'from-emerald-500 to-emerald-600' },
-        { label: 'Aniqlik', value: 99, icon: 'Target', accent: 'from-amber-500 to-amber-600' },
-        { label: 'AI yordam', value: data.ai_assisted, icon: 'Bot', accent: 'from-purple-500 to-purple-600' },
-      ]);
-    });
-  }, []);
+function StatValue({ card, active }: { card: StatCardConfig; active: boolean }) {
+  const count = useCountAnimation(card.target, 1400, active);
+  return <span className="stat-value">{card.format(count)}</span>;
+}
+
+/**
+ * Statistics section — glassmorphic cards with scroll-triggered count-up.
+ * Metrics are curated marketing figures; counter animates via IntersectionObserver.
+ */
+export function StatCards() {
+  const { ref, inView } = useInView<HTMLDivElement>('-40px');
 
   return (
     <motion.div
-      className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4"
+      ref={ref}
+      className="stats-grid"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-40px' }}
     >
-      {stats.map((stat) => {
-        const Icon = iconMap[stat.icon];
-
+      {STATS.map((card) => {
+        const Icon = card.icon;
         return (
-          <motion.div
-            key={stat.label}
-            variants={cardVariants}
-            className="rounded-2xl p-4 md:p-5 border transition-all duration-300 hover:-translate-y-0.5"
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              borderColor: 'var(--border-card)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-          >
-            <div
-              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.accent} flex items-center justify-center shadow-lg`}
-              style={{
-                boxShadow: `0 4px 12px rgba(${stat.accent.includes('blue') ? '0,122,255' : stat.accent.includes('emerald') ? '52,199,89' : stat.accent.includes('amber') ? '255,149,0' : '175,82,222'},0.3)`,
-              }}
-            >
-              <Icon className="w-5 h-5 text-white" />
+          <motion.div key={card.id} variants={cardVariants} className={`stat-card glass-card ${ACCENT_CLASS[card.id] ?? ''}`}>
+            <div className="flex items-center justify-between">
+              <div className="stat-icon" style={{ background: card.gradient }}>
+                <Icon className="w-6 h-6" />
+              </div>
+              {card.live && (
+                <span className="live-badge">
+                  <span className="live-dot" aria-hidden="true" />
+                  {t('stat.live')}
+                </span>
+              )}
             </div>
-            <div className="mt-3">
-              <AnimatedCounter value={stat.value} suffix={stat.icon === 'Target' ? '%' : ''} />
+            <div className="stat-value-wrap">
+              <StatValue card={card} active={inView} />
             </div>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-              {stat.label}
-            </p>
+            <p className="stat-label">{card.label}</p>
           </motion.div>
         );
       })}

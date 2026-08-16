@@ -17,10 +17,26 @@ def save_project(
     has_pool=False,
     has_garage=False,
     has_terrace=False,
+    features=None,
     ai_summary=None,
 ):
     result = calculate_materials(area)
     floor_count = estimate_storeys(area, rooms)
+    if features is None:
+        features = []
+    # Derive the tag list from booleans + a modern-villa heuristic so existing
+    # callers (bot, web) automatically get the richer material breakdown.
+    derived = list(features)
+    if has_pool and 'pool' not in derived:
+        derived.append('pool')
+    if has_garage and 'garage' not in derived:
+        derived.append('garage')
+    if has_terrace and 'terrace' not in derived:
+        derived.append('terrace')
+    if area >= 300 and rooms >= 8:
+        for tag in ('modern_facade', 'garden'):
+            if tag not in derived:
+                derived.append(tag)
     if ai_summary is None:
         ai_advice = generate_house_advice(area, rooms, bathrooms, has_pool, has_garage, has_terrace, floor_count)
         ai_summary = json.dumps(ai_advice) if isinstance(ai_advice, dict) else ai_advice
@@ -34,6 +50,7 @@ def save_project(
         has_pool=has_pool,
         has_garage=has_garage,
         has_terrace=has_terrace,
+        features=derived,
         ai_summary=ai_summary,
         source=source,
         user_name=user_name,

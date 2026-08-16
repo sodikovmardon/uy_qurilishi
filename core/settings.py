@@ -10,41 +10,168 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Local non-committed secrets (AWS keys for S3 image storage, etc.).
+load_dotenv(BASE_DIR / '.env')
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    return os.getenv(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def _env_list(name: str) -> list[str]:
+    return [item.strip() for item in os.getenv(name, '').split(',') if item.strip()]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7hc%n4x+v!5c9hgxp%!$wjbe0i0&c7*p8(^$)%p6w-4s)m1g_8'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _env_bool('DJANGO_DEBUG', default=True)
 
-ALLOWED_HOSTS = ['*']
+# SECURITY WARNING: keep the secret key used in production secret!
+# The key is loaded from the environment; the fallback below is a random
+# throwaway value only safe for local development. Never commit a real key.
+# In production (DEBUG off) a missing key fails loudly with a clear message.
+_env_secret = os.getenv('DJANGO_SECRET_KEY')
+if _env_secret:
+    SECRET_KEY = _env_secret
+elif DEBUG:
+    SECRET_KEY = 'django-insecure-7hc%n4x+v!5c9hgxp%!$wjbe0i0&c7*p8(^$)%p6w-4s)m1g_8'
+else:
+    raise RuntimeError(
+        'DJANGO_SECRET_KEY env var is not set. Generate one with '
+        '`python -c "from django.core.management.utils import get_random_secret_key; '
+        'print(get_random_secret_key())"` and set it in the environment.'
+    )
+
+# Allowed hosts: explicit env list wins; otherwise production picks up the
+# Railway public domain automatically so the site doesn't 400 right after
+# deploy.
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS')
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ['*']
+    else:
+        ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+        if os.environ.get('RAILWAY_PUBLIC_DOMAIN'):
+            ALLOWED_HOSTS.append(os.environ['RAILWAY_PUBLIC_DOMAIN'])
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'house_calc.apps.HouseBuildConfig',
     'rest_framework',
     'drf_spectacular',
     'api.apps.ApiConfig',
 ]
 
+# Jazzmin — Django admin skin
+JAZZMIN_SETTINGS = {
+    'site_title': 'Uy Qurilishi',
+    'site_header': 'Uy Qurilishi — boshqaruv',
+    'site_brand': 'Uy Qurilishi',
+    'site_logo_classes': 'img-circle',
+    'welcome_sign': 'Xush kelibsiz! Uy qurilishi boshqaruvi paneli',
+    'copyright': 'Uy Qurilishi',
+    'custom_css': 'admin/css/jazzmin-custom.css',
+    'search_model': ['house_calc.CalculationProject', 'house_calc.Product', 'auth.User'],
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'order_with_respect_to': ['auth', 'house_calc', 'api'],
+    'hide_apps': [],
+    'hide_models': [],
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.User': 'fas fa-user',
+        'auth.Group': 'fas fa-users',
+        'house_calc': 'fas fa-home',
+        'house_calc.CalculationProject': 'fas fa-drafting-compass',
+        'house_calc.Product': 'fas fa-box',
+        'api': 'fas fa-plug',
+        'api.ApiClient': 'fas fa-key',
+    },
+    'default_icon_parents': 'fas fa-chevron-circle-right',
+    'default_icon_children': 'fas fa-circle',
+    'related_modal_active': True,
+    'custom_links': {
+        'house_calc': [
+            {
+                'name': 'Do\'kon paneli',
+                'url': '/boshqaruv/',
+                'icon': 'fas fa-store',
+                'permissions': ['house_calc.view_product'],
+            },
+            {
+                'name': 'API hujjatlari',
+                'url': '/api/docs/',
+                'icon': 'fas fa-book',
+                'permissions': ['house_calc.view_product'],
+            },
+        ]
+    },
+    'show_ui_builder': False,
+    'changeform_format': 'horizontal_tabs',
+    'changeform_format_overrides': {'auth.user': 'collapsible', 'auth.group': 'vertical_tabs'},
+    'theme': 'flatly',
+    'dark_mode_theme': 'darkly',
+    'use_google_fonts': True,
+}
+
+# Jazzmin UI tweaks
+JAZZMIN_UI_TWEAKS = {
+    'theme': 'flatly',
+    'dark_mode_theme': 'darkly',
+    'default_theme_mode': 'light',
+    'accent': 'accent-primary',
+    'navbar': 'navbar-white navbar-light',
+    'no_navbar_border': True,
+    'navbar_fixed': True,
+    'sidebar': 'sidebar-dark-navy',
+    'sidebar_fixed': True,
+    'disable_sidebar_border': True,
+    'sidebar_nav_flat_style': True,
+    'layout_boxed': False,
+    'button_classes': {
+        'primary': 'btn-primary',
+        'secondary': 'btn-outline-secondary',
+        'info': 'btn-info',
+        'warning': 'btn-warning',
+        'danger': 'btn-danger',
+        'success': 'btn-success',
+    },
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES': ['rest_framework.throttling.ScopedRateThrottle'],
+    'DEFAULT_THROTTLE_RATES': {
+        'store': '120/min',
+        'store_admin': '300/min',
+        'calc': '180/min',
+        'orders': '30/min',
+        'auth': '20/hour',
+        'signup': '10/hour',
+        'chat': '40/min',
+        'files': '60/min',
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -55,6 +182,9 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'core.middleware.SecurityHeadersMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -62,6 +192,57 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS — only specific, trusted origins (own frontend + known partner apps).
+# Never use a wildcard: endpoints carrying session cookies must not be
+# callable cross-origin. Frontends served on the same origin are unaffected.
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS') or [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ['content-type', 'x-api-key', 'authorization', 'x-csrftoken']
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+
+# ---- Transport security (enforced via env in production) ----
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_SSL_REDIRECT = _env_bool('DJANGO_SECURE_SSL_REDIRECT')
+SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_HSTS_SECONDS', '0'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
+X_FRAME_OPTIONS = 'DENY'
+
+# ---- Session & CSRF cookies ----
+# Auth is cookie-based (Django sessions); keep the token httpOnly and
+# same-site so it can't be read by JS or sent cross-site.
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = _env_bool('DJANGO_SESSION_COOKIE_SECURE')
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = _env_bool('DJANGO_CSRF_COOKIE_SECURE')
+# The frontend reads the CSRF token cookie to send X-CSRFToken on mutations.
+CSRF_COOKIE_HTTPONLY = False
+CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+
+# ---- Password hashing ----
+# Argon2 is the strongest default; PBKDF2 remains as a fallback so existing
+# hashes keep verifying. Argon2 requires the argon2-cffi package.
+try:
+    import argon2  # noqa: F401
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.Argon2PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    ]
+except ImportError:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    ]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -86,13 +267,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+#
+# Production (e.g. Railway Postgres) provides DATABASE_URL; local development
+# keeps the git-ignored sqlite file.
+DATABASES = {'default': dj_database_url.config(
+    default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+    conn_max_age=600,
+    conn_health_checks=True,
+)}
 
 
 # Password validation
@@ -132,6 +314,34 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'house_calc' / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise serves the collectstatic output in production (no separate web
+# server needed). Hashed manifest storage gives long-lived cache headers.
+if not os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+    }
+
+# User-uploaded media (project + store product photos)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Image storage: Amazon S3 when AWS_* env vars are set (see .env), otherwise
+# the local git-ignored media/ directory (dev). S3 buckets must allow public
+# reads so image URLs are directly viewable in the browser.
+if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+    AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+    AWS_S3_REGION_NAME = os.environ.get('AWS_REGION', 'us-east-1')
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    STORAGES = {
+        'default': {'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

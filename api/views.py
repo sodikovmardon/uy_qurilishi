@@ -1,11 +1,38 @@
-import math
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.core.files.storage import default_storage
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.utils import OpenApiExample, extend_schema
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+import json
+
+from api.drawings import (
+    DrawingError,
+    build_zip,
+    delete_drawing_files,
+    drawing_entries,
+    resolve_drawings,
+    upload_drawings,
+)
+from api.images import ImageError, reorder_keys, save_uploads, to_absolute
+from api.materials import calculate_materials as _calculate_materials
+from api.security import (
+    AuthThrottle,
+    CalcThrottle,
+    ChatThrottle,
+    FilesThrottle,
+    SignupThrottle,
+    clear_failed_logins,
+    csrf_protected,
+    login_blocked,
+    mark_failed_login,
+    validate_password_policy,
+)
 from api.serializers import (
     AuthSerializer,
     CalculateSerializer,
@@ -15,23 +42,7 @@ from api.serializers import (
 )
 from house_calc.models import CalculationProject
 from house_calc.services import save_project
-
-
-def _calculate_materials(area: int, rooms: int) -> dict:
-    perimeter = math.sqrt(area) * 4
-    wall_area = perimeter * 3 * 0.85
-    bricks = round(wall_area * 400)
-    cement = round((bricks / 1000) * 0.5, 1)
-    sand = round(cement * 3, 1)
-
-    if area >= 2600 or rooms >= 14:
-        storeys = 3
-    elif area >= 900 or rooms >= 8:
-        storeys = 2
-    else:
-        storeys = 1
-
-    return {'bricks': bricks, 'cement': cement, 'sand': sand, 'storeys': storeys}
+from api.chat import chat
 
 
 @extend_schema(
@@ -65,7 +76,7 @@ def project_list(request):
     per_page = 12
     start = (page - 1) * per_page
     end = start + per_page
-    data = ProjectSerializer(projects[start:end], many=True).data
+    data = ProjectSerializer(projects[start:end], many=True, context={'request': request}).data
     return Response({
         'results': data,
         'total': projects.count(),
@@ -81,6 +92,8 @@ def project_list(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([CalcThrottle])
+@csrf_protected
 def project_create(request):
     serializer = ProjectCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -91,10 +104,11 @@ def project_create(request):
         has_pool=serializer.validated_data['has_pool'],
         has_garage=serializer.validated_data['has_garage'],
         has_terrace=serializer.validated_data['has_terrace'],
+        features=serializer.validated_data.get('features', []),
         user_name=serializer.validated_data.get('user_name', ''),
         source=CalculationProject.SOURCE_WEB,
     )
-    return Response(ProjectSerializer(project).data, status=201)
+    return Response(ProjectSerializer(project, context={'request': request}).data, status=201)
 
 
 @extend_schema(
@@ -110,7 +124,7 @@ def project_detail(request, pk):
     except CalculationProject.DoesNotExist:
         return Response({'error': 'Project not found'}, status=404)
 
-    data = ProjectSerializer(project).data
+    data = ProjectSerializer(project, context={'request': request}).data
     data['ai_summary'] = project.ai_summary or ''
     data['storeys'] = _calculate_materials(project.area, project.rooms)['storeys']
     return Response(data)
@@ -123,7 +137,9 @@ def project_detail(request, pk):
     description='Mavjud loyiha ma\'lumotlarini yangilaydi',
 )
 @api_view(['PUT'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
+@throttle_classes([FilesThrottle])
+@csrf_protected
 def project_update(request, pk):
     try:
         project = CalculationProject.objects.get(pk=pk)
@@ -135,7 +151,117 @@ def project_update(request, pk):
     for field, value in serializer.validated_data.items():
         setattr(project, field, value)
     project.save()
-    return Response(ProjectSerializer(project).data)
+    return Response(ProjectSerializer(project, context={'request': request}).data)
+
+
+@extend_schema(
+    summary='Loyiha rasmlarini yuklash',
+    description='Multipart "images" maydonidagi fayllarni yuklaydi. JPG/PNG/WebP, har biri 5 MB gacha, jami 6 ta.',
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([FilesThrottle])
+@csrf_protected
+def project_images_upload(request, pk):
+    project = get_object_or_404(CalculationProject, pk=pk)
+    try:
+        keys = save_uploads(request.FILES.getlist('images'), 'projects', project.images)
+    except ImageError as exc:
+        return Response({'error': str(exc)}, status=400)
+    project.images = keys
+    project.save(update_fields=['images'])
+    return Response({'images': [to_absolute(request, key) for key in keys]})
+
+
+@extend_schema(
+    summary='Loyiha rasmlarini qayta tartiblash / o\'chirish',
+    description='JSON {"images": [url, ...]} — yangi tartib (birinchisi asosiy). Ro\'yxatda qolmagan rasmlar o\'chiriladi.',
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([FilesThrottle])
+@csrf_protected
+def project_images_reorder(request, pk):
+    project = get_object_or_404(CalculationProject, pk=pk)
+    resolved = reorder_keys(request.data.get('images'), project.images)
+    for key in project.images:
+        if key not in resolved:
+            try:
+                if not key.startswith(('http://', 'https://')) and default_storage.exists(key):
+                    default_storage.delete(key)
+            except Exception:
+                pass
+    project.images = resolved
+    project.save(update_fields=['images'])
+    return Response({'images': [to_absolute(request, key) for key in resolved]})
+
+
+@extend_schema(
+    summary='Loyiha texnik chizmalarini yuklash',
+    description=(
+        'Multipart: "files" maydonidagi fayllar + "meta" (JSON massiv, har bir fayl uchun '
+        '{type, title, floor_number, subtype}). Qabul qilinadi: PDF, JPG, PNG, WebP, DWG, DXF. '
+        'PDF uchun birinchi sahifa eskizi avtomatik yaratiladi.'
+    ),
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([FilesThrottle])
+@csrf_protected
+def project_drawings_upload(request, pk):
+    project = get_object_or_404(CalculationProject, pk=pk)
+    try:
+        meta = json.loads(request.POST.get('meta', '[]') or '[]')
+    except ValueError:
+        return Response({'error': 'Meta ma\'lumot noto\'g\'ri'}, status=400)
+
+    types = [str(m.get('type', '')) for m in meta]
+    titles = [str(m.get('title', '')) for m in meta]
+    floors = [m.get('floor_number', None) for m in meta]
+    subtypes = [str(m.get('subtype', '')) for m in meta]
+
+    try:
+        upload_drawings(project, request.FILES.getlist('files'), types, titles, floors, subtypes)
+    except DrawingError as exc:
+        return Response({'error': str(exc)}, status=400)
+    return Response({'drawings': drawing_entries(request, project)})
+
+
+@extend_schema(
+    summary='Chizmalarni tartiblash / o\'chirish',
+    description='JSON {"drawings": [...]} — yangi to\'liq ro\'yxat (URL-lar). Ro\'yxatda qolmagan chizmalar o\'chiriladi.',
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@throttle_classes([FilesThrottle])
+@csrf_protected
+def project_drawings_update(request, pk):
+    project = get_object_or_404(CalculationProject, pk=pk)
+    try:
+        resolved = resolve_drawings(request.data.get('drawings'), project.technical_drawings)
+    except DrawingError as exc:
+        return Response({'error': str(exc)}, status=400)
+    for entry in project.technical_drawings:
+        if entry not in resolved:
+            delete_drawing_files(entry)
+    project.technical_drawings = resolved
+    project.save(update_fields=['technical_drawings'])
+    return Response({'drawings': drawing_entries(request, project)})
+
+
+@extend_schema(
+    summary='Barcha chizmalarni ZIP yuklab olish',
+    description='Loyihaning barcha texnik chizmalarini bitta ZIP arxivda qaytaradi.',
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@throttle_classes([FilesThrottle])
+def project_drawings_zip(request, pk):
+    project = get_object_or_404(CalculationProject, pk=pk)
+    buffer = build_zip(project)
+    response = HttpResponse(buffer.read(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="loyiha-{project.pk}-chizmalar.zip"'
+    return response
 
 
 @extend_schema(
@@ -146,16 +272,25 @@ def project_update(request, pk):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([SignupThrottle])
+@csrf_protected
 def auth_signup(request):
     serializer = SignupSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    if User.objects.filter(username=serializer.validated_data['phone']).exists():
-        return Response({'error': 'Bu telefon raqam allaqachon ro\'yxatdan o\'tgan'}, status=400)
+    phone = serializer.validated_data['phone']
+    password = serializer.validated_data['password']
+
+    password_error = validate_password_policy(password, username=phone)
+    if password_error:
+        return Response({'error': password_error}, status=400)
+
+    if User.objects.filter(username=phone).exists():
+        return Response({'error': 'Ro\'yxatdan o\'tib bo\'lmadi, iltimos boshqa telefon raqam yoki parol bilan urinib ko\'ring'}, status=400)
 
     user = User.objects.create_user(
-        username=serializer.validated_data['phone'],
-        password=serializer.validated_data['password'],
+        username=phone,
+        password=password,
         first_name=serializer.validated_data['name'],
     )
     login(request, user)
@@ -174,16 +309,25 @@ def auth_signup(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([AuthThrottle])
+@csrf_protected
 def auth_login(request):
     serializer = AuthSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data['username']
+
+    if login_blocked(username, request):
+        return Response({'error': 'Ko\'p marta xato urinish. 15 daqiqadan keyin qayta urinib ko\'ring'}, status=429)
+
     user = authenticate(
         request,
-        username=serializer.validated_data['username'],
+        username=username,
         password=serializer.validated_data['password'],
     )
     if user is None:
+        mark_failed_login(username, request)
         return Response({'error': 'Telefon raqam yoki parol noto\'g\'ri'}, status=401)
+    clear_failed_logins(username, request)
     login(request, user)
     return Response({
         'id': user.id,
@@ -197,6 +341,7 @@ def auth_login(request):
     description='Joriy foydalanuvchini tizimdan chiqaradi',
 )
 @api_view(['POST'])
+@csrf_protected
 def auth_logout(request):
     logout(request)
     return Response({'ok': True})
@@ -207,6 +352,7 @@ def auth_logout(request):
     description='Joriy foydalanuvchining autentifikatsiya holatini qaytaradi',
 )
 @api_view(['GET'])
+@ensure_csrf_cookie
 def auth_status(request):
     if request.user.is_authenticated:
         return Response({

@@ -159,7 +159,7 @@ class CalculationProjectTests(TestCase):
 
     def test_home_view_saves_result_and_redirects_to_dashboard(self):
         response = self.client.post(
-            reverse('house_calc:home'),
+            reverse('house_calc:django_home'),
             {
                 'area': 120,
                 'user_name': 'Vali',
@@ -169,16 +169,16 @@ class CalculationProjectTests(TestCase):
                 'has_terrace': 'on',
                 'has_pool': 'on',
             },
-            follow=True,
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Loyiha saqlandi")
-        self.assertContains(response, "Tanlangan loyiha")
-        self.assertContains(response, "44694")
-        self.assertContains(response, "4 xona")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"?project=", response['Location'])
+        self.assertIn("&created=1", response['Location'])
         self.assertEqual(CalculationProject.objects.count(), 1)
-        self.assertTrue(CalculationProject.objects.first().ai_summary)
+        project = CalculationProject.objects.first()
+        self.assertEqual(project.user_name, 'Vali')
+        self.assertEqual(project.area, 120)
+        self.assertTrue(project.ai_summary)
 
     def test_home_view_can_open_selected_project(self):
         project = save_project(
@@ -193,7 +193,7 @@ class CalculationProjectTests(TestCase):
             ai_summary='Tanlangan loyiha uchun tavsiya',
         )
 
-        response = self.client.get(reverse('house_calc:home'), {'project': project.pk})
+        response = self.client.get(reverse('house_calc:django_home'), {'project': project.pk})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Dilnoza")

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { api } from '../../api/client';
+import { runWithProgress } from '../../lib/progress';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -48,10 +49,10 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!phone.match(/^\+?\d{9,12}$/)) {
-      errs.phone = 'Telefon raqam noto\'g\'ri (masalan: +998901234567)';
+      errs.phone = 'Telefon raqam noto’g’ri (masalan: +998901234567)';
     }
     if (password.length < 4) {
-      errs.password = 'Parol kamida 4 belgi bo\'lishi kerak';
+      errs.password = 'Parol kamida 4 belgi bo’lishi kerak';
     }
     if (tab === 'register' && name.trim().length < 2) {
       errs.name = 'Ismingizni kiriting';
@@ -65,14 +66,16 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     if (!validate()) return;
     setLoading(true);
     try {
-      if (tab === 'register') {
-        const user = await api.signup({ name, phone, password });
-        onAuthSuccess?.(user);
-      } else {
-        const user = await api.login(phone, password);
-        onAuthSuccess?.(user);
-      }
-      onClose();
+      await runWithProgress(async () => {
+        if (tab === 'register') {
+          const user = await api.signup({ name, phone, password });
+          onAuthSuccess?.(user);
+        } else {
+          const user = await api.login(phone, password);
+          onAuthSuccess?.(user);
+        }
+        onClose();
+      });
     } catch (err: any) {
       setErrors({ form: err.message || 'Xatolik yuz berdi' });
     } finally {
@@ -90,6 +93,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     `w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all duration-200 ${
       errors[field] ? 'border-red-400 ring-2 ring-red-500/20' : 'border-[var(--input-border)] focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/20'
     }`;
+
+  const canSubmit =
+    !loading &&
+    (tab === 'login' || name.trim().length >= 2) &&
+    /^\+?\d{9,12}$/.test(phone) &&
+    password.length >= 4;
 
   return (
     <AnimatePresence>
@@ -167,7 +176,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   className="text-sm font-semibold pb-1 relative"
                   style={{ color: tab === 'register' ? '#007AFF' : 'var(--text-secondary)' }}
                 >
-                  Ro'yxatdan o'tish
+                  Ro’yxatdan o’tish
                   {tab === 'register' && (
                     <motion.div
                       layoutId="auth-tab"
@@ -192,7 +201,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
               {tab === 'register' && (
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    Ism
+                    Ism <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -211,7 +220,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Telefon raqam
+                  Telefon raqam <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -229,7 +238,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Parol
+                  Parol <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -254,12 +263,12 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
 
               <motion.button
                 type="submit"
-                disabled={loading}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#007AFF] to-[#0051A8] shadow-[0_4px_14px_rgba(0,122,255,0.35)] hover:shadow-[0_6px_20px_rgba(0,122,255,0.5)] transition-all disabled:opacity-50"
+                disabled={!canSubmit}
+                whileHover={{ scale: canSubmit ? 1.01 : 1 }}
+                whileTap={{ scale: canSubmit ? 0.97 : 1 }}
+                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#0A84FF] to-[#0060DF] shadow-[0_6px_20px_rgba(10,132,255,0.3)] hover:shadow-[0_10px_28px_rgba(10,132,255,0.45)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Yuklanmoqda...' : tab === 'login' ? 'Kirish' : "Ro'yxatdan o'tish"}
+                {loading ? 'Yuklanmoqda...' : tab === 'login' ? 'Kirish' : "Ro’yxatdan o’tish"}
               </motion.button>
             </form>
           </motion.div>
