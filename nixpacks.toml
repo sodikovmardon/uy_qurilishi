@@ -1,0 +1,5 @@
+[variables]
+# Node 20 + bundled npm 10 install Tailwind's platform bindings (@tailwindcss/oxide)
+# correctly; npm 9 (default with Node 18) skips optional deps on fresh installs
+# (npm/cli#4828), which breaks the vite build.
+NIXPACKS_NODE_VERSION = "20"
