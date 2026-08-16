@@ -46,3 +46,6 @@ generated_previews/
 
 # Codex
 .codex
+
+# Lockfile removed (npm optional-deps bug on Railway builds: npm/cli#4828)
+package-lock.json
