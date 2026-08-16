@@ -3001,6 +3001,93 @@ select.control {
   background: #fff;
 }
 
+/* ------------------------------------------------------------
+    3n-b. PROJECT DETAIL FULL PAGE
+   ------------------------------------------------------------ */
+.project-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.project-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 16px;
+  padding: 6px 0;
+  transition: color 0.15s;
+}
+
+.project-back-link:hover {
+  color: var(--accent);
+}
+
+.project-page-gallery {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  height: min(45vh, 420px);
+  min-height: 220px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.12));
+}
+
+.project-page-tabs {
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+/* Two-column layout on desktop */
+.project-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.project-detail-left,
+.project-detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.project-detail-grid-full {
+  width: 100%;
+}
+
+.project-page-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-page-contact .contact-reveal {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .project-detail-grid {
+    flex-direction: row;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  .project-detail-left {
+    flex: 1 1 55%;
+    min-width: 0;
+  }
+
+  .project-detail-right {
+    flex: 1 1 45%;
+    min-width: 0;
+    position: sticky;
+    top: 80px;
+  }
+}
+
 /* Specs grid — small icon + label + value cards */
 .spec-grid {
   display: grid;
@@ -8095,6 +8182,37 @@ button.drawing-card {
   background: var(--chip-bg);
   border-radius: 999px;
   padding: 2px 7px;
+}
+
+/* Clickable material tile — links to store product */
+.material-tile.is-linkable {
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.material-tile.is-linkable:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.material-store-link {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.material-tile.is-linkable:hover .material-store-link {
+  opacity: 1;
 }
 
 .material-total {

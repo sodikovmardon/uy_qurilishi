@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, HardHat } from 'lucide-react';
 import { api } from '../api/client';
-import ProjectModal, { type ProjectItem } from '../components/projects/ProjectModal';
+import { type ProjectItem } from '../components/projects/ProjectModal';
 import { FavButton } from '../components/ui/FavButton';
 import { FavoritesEmpty } from '../components/ui/EmptyIllustration';
 import { StartConstructionModal } from '../components/construction/StartConstructionModal';
@@ -21,7 +21,6 @@ export function FavoritesPage({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<ProjectItem | null>(null);
   const [startProject, setStartProject] = useState<ProjectItem | null>(null);
 
   useEffect(() => {
@@ -109,7 +108,7 @@ export function FavoritesPage({ embedded = false }: { embedded?: boolean }) {
           {projects.map((p) => {
             const fav = favOf(String(p.id));
             return (
-              <article key={p.id} className="project-card" onClick={() => setSelected(p)}>
+              <article key={p.id} className="project-card" onClick={() => navigate(`/loyihalar/${p.id}`)}>
                 <div className="project-thumb">
                   <Building2 className="w-10 h-10" style={{ color: 'var(--text-secondary)' }} />
                 </div>
@@ -161,8 +160,6 @@ export function FavoritesPage({ embedded = false }: { embedded?: boolean }) {
           })}
         </div>
       )}
-
-      <ProjectModal project={selected} onClose={() => setSelected(null)} />
 
       <StartConstructionModal
         open={!!startProject}

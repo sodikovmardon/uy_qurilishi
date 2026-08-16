@@ -12,6 +12,7 @@ import {
   DoorOpen,
   Droplet,
   Droplets,
+  ExternalLink,
   FileDown,
   FileText,
   Gauge,
@@ -54,6 +55,7 @@ import { addManyToCart } from '../../lib/cart';
 import { runWithProgress } from '../../lib/progress';
 import { saveCalcDraft } from '../../lib/storage';
 import { DEFAULT_REGION_ID } from '../../config/regions';
+import { STORE_URL } from '../../config/links';
 import { t } from '../../lib/i18n';
 
 export interface ProjectItem {
@@ -84,17 +86,17 @@ interface ProjectModalProps {
   onClose: () => void;
 }
 
-function estimateStoreys(area: number, rooms: number): number {
+export function estimateStoreys(area: number, rooms: number): number {
   if (area >= 2600 || rooms >= 14) return 3;
   if (area >= 900 || rooms >= 8) return 2;
   return 1;
 }
 
-function formatDate(iso: string): string {
+export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('uz-UZ');
 }
 
-const ROW_ICONS: Record<string, LucideIcon> = {
+export const ROW_ICONS: Record<string, LucideIcon> = {
   bricks: BrickWall,
   cement: Package,
   sand: Truck,
@@ -113,7 +115,7 @@ const ROW_ICONS: Record<string, LucideIcon> = {
   garden: Sprout,
 };
 
-const ROW_ICON_CLASS: Record<string, string> = {
+export const ROW_ICON_CLASS: Record<string, string> = {
   bricks: 'tile-icon-orange',
   cement: 'tile-icon-blue',
   sand: 'tile-icon-green',
@@ -132,12 +134,27 @@ const ROW_ICON_CLASS: Record<string, string> = {
   garden: 'tile-icon-green',
 };
 
-function MaterialTile({ row }: { row: ProjectStorePricedRow }) {
+export function MaterialTile({ row }: { row: ProjectStorePricedRow }) {
   const Icon = ROW_ICONS[row.key] ?? Package;
   const iconClass = ROW_ICON_CLASS[row.key] ?? 'tile-icon-blue';
   const accentClass = `glass-accent-${iconClass.replace('tile-icon-', '')}`;
+  const hasStore = row.isStorePrice && !!row.store;
+  const storeUrl = hasStore ? `${STORE_URL.replace(/\/$/, '')}/mahsulot/${row.store!.id}` : '';
+
+  const handleClick = () => {
+    if (hasStore) {
+      window.location.href = storeUrl;
+    }
+  };
+
   return (
-    <div className={`calc-tile material-tile glass-card ${accentClass}`}>
+    <div
+      className={`calc-tile material-tile glass-card ${accentClass}${hasStore ? ' is-linkable' : ''}`}
+      onClick={hasStore ? handleClick : undefined}
+      role={hasStore ? 'link' : undefined}
+      tabIndex={hasStore ? 0 : undefined}
+      onKeyDown={hasStore ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
+    >
       <div className={`calc-tile-icon ${iconClass}`}>
         <Icon className="w-5 h-5" />
       </div>
@@ -146,16 +163,22 @@ function MaterialTile({ row }: { row: ProjectStorePricedRow }) {
         <span className="calc-tile-suffix"> {row.unit}</span>
       </p>
       <p className="calc-tile-label">{row.label}</p>
-      {row.isStorePrice && row.store && (
-        <span className="material-store-badge" title={`Do'kondan: ${row.store.name}`}>
+      {hasStore && (
+        <span className="material-store-badge" title={`Do'kondan: ${row.store!.name}`}>
           Do'kondan
+        </span>
+      )}
+      {hasStore && (
+        <span className="material-store-link">
+          Do'kondan ko'rish
+          <ExternalLink className="w-3 h-3" />
         </span>
       )}
     </div>
   );
 }
 
-function EstimateSection({ project }: { project: ProjectItem }) {
+export function EstimateSection({ project }: { project: ProjectItem }) {
   const { showToast } = useApp();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -325,7 +348,7 @@ function EstimateSection({ project }: { project: ProjectItem }) {
   );
 }
 
-function DetailBodySkeleton() {
+export function DetailBodySkeleton() {
   return (
     <div className="p-5 md:p-6 space-y-5">
       <div className="skeleton h-6 w-1/2" />

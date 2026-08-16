@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BadgeCheck, Search, Building2, Loader2, RotateCcw, LandPlot, Pencil, X, Plus } from 'lucide-react';
 import { api } from '../api/client';
-import ProjectModal, { type ProjectItem } from '../components/projects/ProjectModal';
+import { type ProjectItem } from '../components/projects/ProjectModal';
 import ComparisonModal from '../components/comparison/ComparisonModal';
 import PlotMatcherPanel from '../components/projects/PlotMatcherPanel';
 import { FavButton } from '../components/ui/FavButton';
@@ -84,7 +84,6 @@ function formatDate(iso: string): string {
 export function ProjectsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams<{ id: string }>();
   const { showToast, favOf, toggleFav } = useApp();
   const compare = useCompareSelection(2);
   const [compareData, setCompareData] = useState<ComparisonData | null>(null);
@@ -100,7 +99,6 @@ export function ProjectsPage() {
   const [storeysFilter, setStoreysFilter] = useState<StoreysFilter>('all');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
   const [sort, setSort] = useState<Sort>('newest');
-  const [selected, setSelected] = useState<ProjectItem | null>(null);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   /** Plot matcher ("Yer uchastkasi bo'yicha loyiha tanlash"). */
   const [matcherOpen, setMatcherOpen] = useState(
@@ -145,30 +143,6 @@ export function ProjectsPage() {
     const timer = window.setTimeout(() => setDebouncedSearch(search), 300);
     return () => window.clearTimeout(timer);
   }, [search]);
-
-  // Open the detail modal when navigating to /loyihalar/:id (deep link / new tab).
-  useEffect(() => {
-    if (!id) return;
-    const numeric = Number(id);
-    if (!Number.isInteger(numeric) || numeric <= 0) return;
-    const existing = projects.find((p) => p.id === numeric);
-    if (existing) {
-      setSelected(existing);
-      return;
-    }
-    let cancelled = false;
-    api
-      .getProject(numeric)
-      .then((p) => {
-        if (!cancelled) setSelected(p as unknown as ProjectItem);
-      })
-      .catch(() => {
-        if (!cancelled) setSelected(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id, projects]);
 
   const filtered = useMemo(() => {
     const q = debouncedSearch.trim().toLowerCase();
@@ -234,7 +208,6 @@ export function ProjectsPage() {
   };
 
   const handleCardClick = (p: ProjectItem) => {
-    setSelected(p);
     navigate(`/loyihalar/${p.id}`);
   };
 
@@ -511,14 +484,6 @@ export function ProjectsPage() {
           </button>
         </div>
       )}
-
-      <ProjectModal
-        project={selected}
-        onClose={() => {
-          setSelected(null);
-          if (id) navigate('/loyihalar');
-        }}
-      />
 
       {compare.selected.length === 2 && (
         <div className="floating-compare" role="status">

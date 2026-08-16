@@ -18,6 +18,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { NewProjectPage } from './pages/NewProjectPage';
 import { ConstructionPage } from './pages/ConstructionPage';
 import { ConstructionDetailPage } from './pages/ConstructionDetailPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
 import { DokonPage } from './pages/shop/DokonPage';
 import { ApiDocsPage } from './pages/shop/ApiDocsPage';
 import { AdminPage } from './pages/admin/AdminPage';
@@ -94,7 +95,7 @@ function AppContent() {
               <Route path="/" element={<HomePage />} />
               <Route path="/kalkulyator" element={<CalculatorPage />} />
               <Route path="/loyihalar" element={<ProjectsPage />} />
-              <Route path="/loyihalar/:id" element={<ProjectsPage />} />
+              <Route path="/loyihalar/:id" element={<ProjectDetailPage />} />
               <Route path="/yangi-loyiha" element={<NewProjectPage />} />
               <Route path="/sevimlilar" element={<FavoritesPage />} />
               <Route
