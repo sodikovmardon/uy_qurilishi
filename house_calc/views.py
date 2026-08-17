@@ -18,6 +18,7 @@ from house_calc.services import build_project_pdf, save_project
 REACT_BUILD_DIR = Path(settings.BASE_DIR) / 'house_calc' / 'static' / 'react'
 
 
+@ensure_csrf_cookie
 def react_app(request):
     index_path = REACT_BUILD_DIR / 'index.html'
     try:

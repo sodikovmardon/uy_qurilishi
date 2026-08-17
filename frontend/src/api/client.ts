@@ -96,7 +96,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     const csrf = getCsrfToken();
     if (csrf) headers['X-CSRFToken'] = csrf;
   }
-  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
+  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers, credentials: 'same-origin' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Server xatosi');
@@ -114,7 +114,7 @@ async function requestForm<T>(url: string, options?: RequestInit): Promise<T> {
     const csrf = getCsrfToken();
     if (csrf) headers['X-CSRFToken'] = csrf;
   }
-  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
+  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers, credentials: 'same-origin' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Server xatosi');
