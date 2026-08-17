@@ -1,7 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, HardHat, Heart, LogIn, LogOut, Menu, Plus, Settings, User as UserIcon, Wallet, X } from 'lucide-react';
+import {
+  ChevronDown,
+  Calculator,
+  HardHat,
+  Heart,
+  Home,
+  LayoutGrid,
+  LogIn,
+  LogOut,
+  Menu,
+  Plus,
+  Settings,
+  ShoppingBag,
+  User as UserIcon,
+  Wallet,
+  X,
+} from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { t } from '../../lib/i18n';
 import { STORE_URL } from '../../config/links';
@@ -18,12 +34,11 @@ interface NavbarProps {
   onLogout?: () => void;
 }
 
-/** Brand mark — clean SVG house icon. */
 function HouseIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -38,7 +53,6 @@ function HouseIcon() {
   );
 }
 
-/** Initials avatar, e.g. "Mardon" → "M". */
 function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -48,18 +62,26 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-const NAV_LINKS: { to?: string; href?: string; label: string; end?: boolean; badge?: string }[] = [
-  { to: '/', label: t('nav.home'), end: true },
-  { to: '/kalkulyator', label: t('nav.calculator'), end: true },
-  { to: '/loyihalar', label: t('nav.projects') },
-  { href: STORE_URL, label: t('nav.store'), badge: 'Qurilish Bazasi' },
-  { to: '/yangi-loyiha', label: t('nav.new'), end: true },
+const NAV_LINKS: {
+  to?: string;
+  href?: string;
+  label: string;
+  end?: boolean;
+  icon: typeof Home;
+  badge?: string;
+}[] = [
+  { to: '/', label: t('nav.home'), icon: Home, end: true },
+  { to: '/kalkulyator', label: t('nav.calculator'), icon: Calculator, end: true },
+  { to: '/loyihalar', label: t('nav.projects'), icon: LayoutGrid },
+  { href: STORE_URL, label: t('nav.store'), icon: ShoppingBag, badge: 'Qurilish Bazasi' },
+  { to: '/yangi-loyiha', label: t('nav.new'), icon: Plus, end: true },
 ];
 
 function NavLinks({ onPick }: { onPick?: () => void }) {
   return (
     <>
       {NAV_LINKS.map((link) => {
+        const Icon = link.icon;
         if (link.href) {
           return (
             <a
@@ -68,7 +90,8 @@ function NavLinks({ onPick }: { onPick?: () => void }) {
               onClick={onPick}
               className="nav-link store-link"
             >
-              {link.label}
+              <Icon className="nav-link-icon" />
+              <span>{link.label}</span>
               {link.badge && <span className="store-badge">{link.badge}</span>}
             </a>
           );
@@ -81,7 +104,8 @@ function NavLinks({ onPick }: { onPick?: () => void }) {
             onClick={onPick}
             className={({ isActive }) => `nav-link${isActive ? ' is-active' : ''}`}
           >
-            {link.label}
+            <Icon className="nav-link-icon" />
+            <span>{link.label}</span>
           </NavLink>
         );
       })}
@@ -97,7 +121,6 @@ interface UserMenuProps {
   onLogout: () => void;
 }
 
-/** Desktop dropdown next to the avatar — closes on outside click, ESC, or item pick. */
 function UserMenu({ user, logoutConfirm, onConfirmStart, onConfirmCancel, onLogout }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -142,11 +165,19 @@ function UserMenu({ user, logoutConfirm, onConfirmStart, onConfirmCancel, onLogo
           <motion.div
             className="user-dropdown"
             role="menu"
-            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            initial={{ opacity: 0, scale: 0.96, y: -6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            exit={{ opacity: 0, scale: 0.96, y: -6 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
           >
+            <div className="dropdown-header">
+              <span className="user-avatar user-avatar-lg">{initials(user.name)}</span>
+              <div>
+                <p className="dropdown-user-name">{user.name}</p>
+                <p className="dropdown-user-phone">{user.phone}</p>
+              </div>
+            </div>
+            <div className="dropdown-divider" role="separator" />
             {logoutConfirm ? (
               <div className="dropdown-confirm" role="alert">
                 <p>{t('nav.menu.logoutConfirm')}</p>
@@ -182,6 +213,11 @@ function UserMenu({ user, logoutConfirm, onConfirmStart, onConfirmCancel, onLogo
                   Byudjet rejalashtiruvchi
                 </Link>
                 <div className="dropdown-divider" role="separator" />
+                <Link to="/sozlamalar" className="dropdown-item" role="menuitem" onClick={() => setOpen(false)}>
+                  <Settings className="w-4 h-4" aria-hidden="true" />
+                  {t('nav.menu.settings')}
+                </Link>
+                <div className="dropdown-divider" role="separator" />
                 <button className="dropdown-item dropdown-item-danger" role="menuitem" onClick={onConfirmStart}>
                   <LogOut className="w-4 h-4" aria-hidden="true" />
                   {t('nav.signout')}
@@ -195,12 +231,6 @@ function UserMenu({ user, logoutConfirm, onConfirmStart, onConfirmCancel, onLogo
   );
 }
 
-/**
- * Top navigation bar — sticky glassmorphism, brand + links + right actions.
- * Uses real router links (NavLink) so navigation updates the URL, keeps the
- * active pill in sync, and stays keyboard-navigable / crawlable.
- * Responsive: links + user actions collapse into a slide-in drawer on mobile.
- */
 export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
@@ -217,10 +247,7 @@ export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
         <span className="brand-icon">
           <HouseIcon />
         </span>
-        <span className="brand-title">
-          <span className="brand-text">Uy Loyiha Studio</span>
-          <span className="brand-tagline">qurilish loyihalari studiyasi</span>
-        </span>
+        <span className="brand-text">Uy Loyiha Studio</span>
       </Link>
 
       <div className="nav-links">
@@ -269,17 +296,25 @@ export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
           transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
           aria-hidden={!menuOpen}
         >
-          <NavLinks onPick={() => setMenuOpen(false)} />
+          {user && (
+            <div className="drawer-user">
+              <span className="user-avatar user-avatar-lg">{initials(user.name)}</span>
+              <div>
+                <p className="drawer-user-name">{user.name}</p>
+                <p className="drawer-user-phone">{user.phone}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="drawer-links">
+            <NavLinks onPick={() => setMenuOpen(false)} />
+          </div>
 
           <div className="drawer-divider" />
 
           <div className="drawer-actions">
             {user ? (
               <>
-                <div className="drawer-user">
-                  <span className="user-avatar">{initials(user.name)}</span>
-                  <span className="user-menu-name">{user.name}</span>
-                </div>
                 <Link to="/profil" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                   <UserIcon className="w-4 h-4" aria-hidden="true" />
                   {t('nav.menu.profile')}
@@ -305,6 +340,8 @@ export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
                   {t('nav.menu.settings')}
                 </Link>
 
+                <div className="drawer-divider" />
+
                 {logoutConfirm ? (
                   <div className="dropdown-confirm" role="alert">
                     <p>{t('nav.menu.logoutConfirm')}</p>
@@ -318,7 +355,7 @@ export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
                     </div>
                   </div>
                 ) : (
-                  <button className="dropdown-item dropdown-item-danger" onClick={() => setLogoutConfirm(true)}>
+                  <button className="dropdown-item dropdown-item-danger" onClick={setLogoutConfirm.bind(null, true)}>
                     <LogOut className="w-4 h-4" aria-hidden="true" />
                     {t('nav.signout')}
                   </button>
@@ -330,7 +367,7 @@ export function Navbar({ onAuthOpen, user, onLogout }: NavbarProps) {
                   onAuthOpen();
                   setMenuOpen(false);
                 }}
-                className="signin-btn"
+                className="signin-btn signin-btn-full"
               >
                 <LogIn className="w-4 h-4" />
                 {t('nav.signin')}
