@@ -1,5 +1,10 @@
 const BASE_URL = '/api';
 
+function getCsrfToken(): string {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+
 interface User {
   id: number;
   name: string;
@@ -82,10 +87,16 @@ interface AuthStatusResponse {
 }
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
+  const method = (options?.method || 'GET').toUpperCase();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+    const csrf = getCsrfToken();
+    if (csrf) headers['X-CSRFToken'] = csrf;
+  }
+  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Server xatosi');
@@ -95,7 +106,15 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 
 /** Like `request` but without the JSON header — used for multipart (image uploads). */
 async function requestForm<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${url}`, options);
+  const method = (options?.method || 'GET').toUpperCase();
+  const headers: Record<string, string> = {
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+    const csrf = getCsrfToken();
+    if (csrf) headers['X-CSRFToken'] = csrf;
+  }
+  const res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Server xatosi');
@@ -125,6 +144,8 @@ function uploadFilesXhr(
     files.forEach((f) => fd.append(field, f.file, f.name));
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${BASE_URL}${url}`);
+    const csrf = getCsrfToken();
+    if (csrf) xhr.setRequestHeader('X-CSRFToken', csrf);
     xhr.responseType = 'json';
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total);
