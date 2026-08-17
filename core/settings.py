@@ -320,7 +320,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 if not os.environ.get('AWS_STORAGE_BUCKET_NAME'):
     STORAGES = {
         'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-        'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
     }
 
 # User-uploaded media (project + store product photos)
