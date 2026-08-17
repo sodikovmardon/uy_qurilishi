@@ -1,8 +1,9 @@
+import mimetypes
 from pathlib import Path
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -14,14 +15,24 @@ from house_calc.layout_utils import planning_note, summarize_room_program
 from house_calc.models import CalculationProject, Product
 from house_calc.services import build_project_pdf, save_project
 
+REACT_BUILD_DIR = Path(settings.BASE_DIR) / 'house_calc' / 'static' / 'react'
+
 
 def react_app(request):
-    index_path = Path(settings.BASE_DIR) / 'house_calc' / 'static' / 'react' / 'index.html'
+    index_path = REACT_BUILD_DIR / 'index.html'
     try:
         content = index_path.read_text(encoding='utf-8')
     except FileNotFoundError:
         return HttpResponse('Frontend not built. Run: npm run build', status=500)
     return HttpResponse(content, content_type='text/html; charset=utf-8')
+
+
+def react_static(request, path):
+    file_path = (REACT_BUILD_DIR / path).resolve()
+    if not str(file_path).startswith(str(REACT_BUILD_DIR.resolve())) or not file_path.is_file():
+        raise Http404
+    ct, _ = mimetypes.guess_type(str(file_path))
+    return FileResponse(open(file_path, 'rb'), content_type=ct or 'application/octet-stream')
 
 
 @ensure_csrf_cookie

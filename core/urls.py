@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('health/', core_views.health, name='health'),
+    re_path(r'^static/react/assets/(?P<path>.+)$', house_calc_views.react_static, name='react-static'),
 ]
 
 if settings.DEBUG:
