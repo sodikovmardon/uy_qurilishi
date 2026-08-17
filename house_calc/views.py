@@ -28,11 +28,17 @@ def react_app(request):
 
 
 def react_static(request, path):
-    file_path = (REACT_BUILD_DIR / path).resolve()
-    if not str(file_path).startswith(str(REACT_BUILD_DIR.resolve())) or not file_path.is_file():
+    file_path = REACT_BUILD_DIR / path
+    try:
+        file_path.resolve().relative_to(REACT_BUILD_DIR.resolve())
+    except ValueError:
+        raise Http404
+    if not file_path.is_file():
         raise Http404
     ct, _ = mimetypes.guess_type(str(file_path))
-    return FileResponse(open(file_path, 'rb'), content_type=ct or 'application/octet-stream')
+    response = FileResponse(open(file_path, 'rb'), content_type=ct or 'application/octet-stream')
+    response['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return response
 
 
 @ensure_csrf_cookie

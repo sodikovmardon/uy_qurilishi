@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs_20", "python312", "python312Packages.pip"]
 
 [phases.install]
-cmds = ["npm i", "pip install --break-system-packages -r requirements.txt"]
+cmds = ["cd frontend && npm i && cd ..", "pip install --break-system-packages -r requirements.txt"]
 
 [phases.build]
-cmds = ["npm run build", "python manage.py collectstatic --noinput"]
+cmds = ["cd frontend && npm run build && cd ..", "python manage.py collectstatic --noinput"]
