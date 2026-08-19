@@ -10,6 +10,7 @@ import Button from '../ui/Button';
 import CompassWidget from './CompassWidget';
 import { ORIENTATION_BY_ID, type OrientationId } from '../../lib/orientation';
 import { DRAWING_SUBTYPE_OPTIONS, DRAWING_TYPE_OPTIONS } from './TechnicalDrawingsSection';
+import FloorPlanGenerator from '../floorplan/FloorPlanGenerator';
 
 interface ImageEntry {
   name: string;
@@ -309,7 +310,7 @@ export default function SubmissionForm() {
 
           <div className="field">
             <span className="tile-label" id="sub-orientation-label">
-              Quyosh yo’nalishi <span className="hint-muted">(ixtiyoriy)</span>
+              Quyosh yo'nalishi <span className="hint-muted">(ixtiyoriy)</span>
             </span>
             <div className="submission-orientation">
               <CompassWidget
@@ -341,6 +342,15 @@ export default function SubmissionForm() {
               </div>
             </div>
           </div>
+
+          <FloorPlanGenerator
+            totalArea={Number(area) || 120}
+            rooms={Number(rooms) || 4}
+            storeys={Number(storeys) || 1}
+            hasGarage={features.includes('garage')}
+            hasPool={features.includes('pool')}
+            hasTerrace={features.includes('terrace')}
+          />
         </div>
 
         <div className="flex flex-col gap-4">

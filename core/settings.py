@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+# pyrefly: ignore [missing-import]
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -232,6 +233,7 @@ CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 # Argon2 is the strongest default; PBKDF2 remains as a fallback so existing
 # hashes keep verifying. Argon2 requires the argon2-cffi package.
 try:
+    # pyrefly: ignore [missing-import]
     import argon2  # noqa: F401
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.Argon2PasswordHasher',
