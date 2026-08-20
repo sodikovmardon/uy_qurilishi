@@ -228,6 +228,11 @@ CSRF_COOKIE_SECURE = _env_bool('DJANGO_CSRF_COOKIE_SECURE')
 # The frontend reads the CSRF token cookie to send X-CSRFToken on mutations.
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
+if not CSRF_TRUSTED_ORIGINS:
+    _railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+    if _railway_domain:
+        CSRF_TRUSTED_ORIGINS = [f'https://{_railway_domain}']
+    CSRF_TRUSTED_ORIGINS += ['http://localhost:5173', 'http://localhost:8000']
 
 # ---- Password hashing ----
 # Argon2 is the strongest default; PBKDF2 remains as a fallback so existing
