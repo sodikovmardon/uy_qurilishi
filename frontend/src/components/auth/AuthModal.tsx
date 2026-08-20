@@ -94,6 +94,8 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
       errors[field] ? 'border-red-400 ring-2 ring-red-500/20' : 'border-[var(--input-border)] focus:border-[#007AFF] focus:ring-2 focus:ring-[#007AFF]/20'
     }`;
 
+  const iconWrap = 'relative overflow-hidden rounded-xl';
+
   const canSubmit =
     !loading &&
     (tab === 'login' || name.trim().length >= 2) &&
@@ -105,16 +107,16 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
       {isOpen && (
         <motion.div
           ref={overlayRef}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center sm:p-4 p-0 sm:items-center items-end"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.target === overlayRef.current && onClose()}
+          style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
         >
           <div
-            className="absolute inset-0 overflow-hidden"
-            style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+            className="absolute inset-0 overflow-hidden pointer-events-none"
           >
             <motion.div
               className="absolute w-[500px] h-[500px] rounded-full opacity-30 blur-3xl"
@@ -145,15 +147,15 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           </div>
 
           <motion.div
-            className="relative w-full max-w-sm rounded-2xl border shadow-[0_25px_60px_rgba(0,0,0,0.2)] overflow-hidden"
+            className="relative w-full max-w-sm sm:rounded-2xl rounded-t-2xl rounded-b-none border shadow-[0_25px_60px_rgba(0,0,0,0.2)] overflow-hidden sm:max-h-[85vh] max-h-[92vh]"
             style={{
               backgroundColor: 'var(--bg-panel)',
               backdropFilter: 'blur(24px)',
               borderColor: 'var(--border-panel)',
             }}
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.94 }}
+            initial={{ opacity: 0, scale: 0.88, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 40 }}
             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
           >
             <div className="flex items-center justify-between px-6 pt-6 pb-2">
@@ -203,7 +205,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                     Ism <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
+                  <div className={iconWrap}>
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
@@ -222,7 +224,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Telefon raqam <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
+                <div className={iconWrap}>
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="tel"
@@ -240,7 +242,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Parol <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
+                <div className={iconWrap}>
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}

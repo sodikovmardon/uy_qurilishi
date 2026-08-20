@@ -2496,6 +2496,8 @@ select.control {
   position: relative;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
 }
 
 .control-wrap .control {
@@ -2508,14 +2510,14 @@ select.control {
 
 .control-suffix {
   position: absolute;
-  right: 6px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
@@ -5551,6 +5553,8 @@ textarea:focus-visible,
 .store-search {
   position: relative;
   flex: 0 1 340px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
 }
 
 .store-search-icon {
@@ -11811,10 +11815,6 @@ button.drawing-card {
 
 /* ---- Global mobile fixes ---- */
 @media (max-width: 767px) {
-  /* Ensure no horizontal overflow anywhere */
-  * {
-    max-width: 100vw;
-  }
 
   /* Data tables scroll horizontally */
   .data-table {

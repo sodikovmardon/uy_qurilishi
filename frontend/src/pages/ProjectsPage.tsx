@@ -260,7 +260,7 @@ export function ProjectsPage() {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3 my-5 mb-8">
-        <div className="relative w-full md:w-[320px]">
+        <div className="relative w-full md:w-[320px] overflow-hidden rounded-[var(--radius-md)]">
           <Search
             className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4"
             style={{ color: 'var(--text-muted)' }}
