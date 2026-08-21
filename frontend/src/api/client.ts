@@ -289,6 +289,13 @@ export const api = {
     });
   },
 
+  googleAuth(credential: string) {
+    return request<AuthResponse & { email?: string; picture?: string; created?: boolean }>('/auth/google/', {
+      method: 'POST',
+      body: JSON.stringify({ credential }),
+    });
+  },
+
   logout() {
     return request<{ ok: boolean }>('/auth/logout/', {
       method: 'POST',

@@ -347,6 +347,67 @@ def auth_logout(request):
     return Response({'ok': True})
 
 
+import requests as _http_requests
+
+GOOGLE_TOKENINFO_URL = 'https://oauth2.googleapis.com/tokeninfo'
+
+
+@extend_schema(
+    summary='Google orqali kirish',
+    description='Google ID tokenini tasdiqlab tizimga kiradi yoki yangi hisob yaratadi',
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@throttle_classes([AuthThrottle])
+@csrf_protected
+def auth_google(request):
+    id_token = request.data.get('credential')
+    if not id_token:
+        return Response({'error': 'Google token topilmadi'}, status=400)
+
+    try:
+        resp = _http_requests.get(
+            GOOGLE_TOKENINFO_URL,
+            params={'id_token': id_token},
+            timeout=5,
+        )
+        if resp.status_code != 200:
+            return Response({'error': 'Google token yaroqsiz'}, status=401)
+        claims = resp.json()
+    except Exception:
+        return Response({'error': 'Google bilan bog\'lanib bo\'lmadi'}, status=502)
+
+    email = claims.get('email')
+    google_name = claims.get('name', '')
+    picture = claims.get('picture', '')
+
+    if not email:
+        return Response({'error': 'Google hisobida email topilmadi'}, status=401)
+
+    username = f'google:{email}'
+
+    user, created = User.objects.get_or_create(
+        username=username,
+        defaults={
+            'first_name': google_name or email.split('@')[0],
+            'email': email,
+        },
+    )
+    if created:
+        user.set_unusable_password()
+        user.save()
+
+    login(request, user)
+    return Response({
+        'id': user.id,
+        'name': user.first_name,
+        'phone': user.username,
+        'email': email,
+        'picture': picture,
+        'created': created,
+    })
+
+
 @extend_schema(
     summary='Auth holati',
     description='Joriy foydalanuvchining autentifikatsiya holatini qaytaradi',

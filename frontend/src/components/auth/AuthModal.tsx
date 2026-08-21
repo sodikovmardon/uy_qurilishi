@@ -1,8 +1,24 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { api } from '../../api/client';
 import { runWithProgress } from '../../lib/progress';
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+          }) => void;
+          renderButton: (parent: HTMLElement, config: { theme: string; size: string; text: string; width: number }) => void;
+        };
+      };
+    };
+  }
+}
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,6 +28,8 @@ interface AuthModalProps {
 
 type AuthTab = 'login' | 'register';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [tab, setTab] = useState<AuthTab>('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +38,9 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const [name, setName] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleEscape(e: KeyboardEvent) {
@@ -43,16 +63,84 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
       setName('');
       setErrors({});
       setTab('login');
+      setGoogleLoading(false);
     }
   }, [isOpen]);
+
+  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+    setGoogleLoading(true);
+    setErrors({});
+    try {
+      await runWithProgress(async () => {
+        const user = await api.googleAuth(response.credential);
+        onAuthSuccess?.({ id: user.id, name: user.name, phone: user.phone });
+        onClose();
+      });
+    } catch (err: any) {
+      setErrors({ form: err.message || 'Google bilan kirishda xatolik' });
+    } finally {
+      setGoogleLoading(false);
+    }
+  }, [onAuthSuccess, onClose]);
+
+  useEffect(() => {
+    if (!isOpen || !GOOGLE_CLIENT_ID || !googleBtnRef.current) return;
+
+    const loadGoogleScript = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        if (googleBtnRef.current) {
+          googleBtnRef.current.innerHTML = '';
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: 'outline',
+            size: 'large',
+            text: 'continue_with',
+            width: 320,
+          });
+        }
+        return;
+      }
+
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) return;
+
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (window.google?.accounts?.id) {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+          });
+          if (googleBtnRef.current) {
+            googleBtnRef.current.innerHTML = '';
+            window.google.accounts.id.renderButton(googleBtnRef.current, {
+              theme: 'outline',
+              size: 'large',
+              text: 'continue_with',
+              width: 320,
+            });
+          }
+        }
+      };
+      document.head.appendChild(script);
+    };
+
+    loadGoogleScript();
+  }, [isOpen, handleGoogleResponse]);
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!phone.match(/^\+?\d{9,12}$/)) {
-      errs.phone = 'Telefon raqam noto’g’ri (masalan: +998901234567)';
+      errs.phone = "Telefon raqam noto'g'ri (masalan: +998901234567)";
     }
     if (password.length < 4) {
-      errs.password = 'Parol kamida 4 belgi bo’lishi kerak';
+      errs.password = "Parol kamida 4 belgi bo'lishi kerak";
     }
     if (tab === 'register' && name.trim().length < 2) {
       errs.name = 'Ismingizni kiriting';
@@ -178,7 +266,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
                   className="text-sm font-semibold pb-1 relative"
                   style={{ color: tab === 'register' ? '#007AFF' : 'var(--text-secondary)' }}
                 >
-                  Ro’yxatdan o’tish
+                  Ro'yxatdan o'tish
                   {tab === 'register' && (
                     <motion.div
                       layoutId="auth-tab"
@@ -195,84 +283,102 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 pt-4 space-y-4">
+            <div className="px-6 pt-4 pb-2 space-y-4">
               {errors.form && (
                 <p className="text-xs text-red-500 text-center">{errors.form}</p>
               )}
 
-              {tab === 'register' && (
+              {GOOGLE_CLIENT_ID ? (
+                <>
+                  <div ref={googleBtnRef} className="w-full flex justify-center" />
+                  {googleLoading && (
+                    <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
+                      Google bilan kirilmoqda...
+                    </p>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px" style={{ background: 'var(--border-card)' }} />
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>yoki</span>
+                    <div className="flex-1 h-px" style={{ background: 'var(--border-card)' }} />
+                  </div>
+                </>
+              ) : null}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {tab === 'register' && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                      Ism <span className="text-red-500">*</span>
+                    </label>
+                    <div className={iconWrap}>
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Abdulla"
+                        className={inputClass('name')}
+                        style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                    {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                    Ism <span className="text-red-500">*</span>
+                    Telefon raqam <span className="text-red-500">*</span>
                   </label>
                   <div className={iconWrap}>
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Abdulla"
-                      className={inputClass('name')}
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+998901234567"
+                      className={inputClass('phone')}
                       style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)' }}
                     />
                   </div>
-                  {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
+                  {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                 </div>
-              )}
 
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Telefon raqam <span className="text-red-500">*</span>
-                </label>
-                <div className={iconWrap}>
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+998901234567"
-                    className={inputClass('phone')}
-                    style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)' }}
-                  />
+                <div>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                    Parol <span className="text-red-500">*</span>
+                  </label>
+                  <div className={iconWrap}>
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••"
+                      className={inputClass('password')}
+                      style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
                 </div>
-                {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-              </div>
 
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Parol <span className="text-red-500">*</span>
-                </label>
-                <div className={iconWrap}>
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••"
-                    className={inputClass('password')}
-                    style={{ backgroundColor: 'var(--input-bg)', color: 'var(--text-primary)' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
-              </div>
-
-              <motion.button
-                type="submit"
-                disabled={!canSubmit}
-                whileHover={{ scale: canSubmit ? 1.01 : 1 }}
-                whileTap={{ scale: canSubmit ? 0.97 : 1 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#0A84FF] to-[#0060DF] shadow-[0_6px_20px_rgba(10,132,255,0.3)] hover:shadow-[0_10px_28px_rgba(10,132,255,0.45)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Yuklanmoqda...' : tab === 'login' ? 'Kirish' : "Ro’yxatdan o’tish"}
-              </motion.button>
-            </form>
+                <motion.button
+                  type="submit"
+                  disabled={!canSubmit}
+                  whileHover={{ scale: canSubmit ? 1.01 : 1 }}
+                  whileTap={{ scale: canSubmit ? 0.97 : 1 }}
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-b from-[#0A84FF] to-[#0060DF] shadow-[0_6px_20px_rgba(10,132,255,0.3)] hover:shadow-[0_10px_28px_rgba(10,132,255,0.45)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Yuklanmoqda...' : tab === 'login' ? 'Kirish' : "Ro'yxatdan o'tish"}
+                </motion.button>
+              </form>
+            </div>
           </motion.div>
         </motion.div>
       )}

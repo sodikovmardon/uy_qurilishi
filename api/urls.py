@@ -18,6 +18,7 @@ urlpatterns = [
     path('projects/<int:pk>/drawings/zip/', views.project_drawings_zip, name='api_project_drawings_zip'),
     path('auth/signup/', views.auth_signup, name='api_signup'),
     path('auth/login/', views.auth_login, name='api_login'),
+    path('auth/google/', views.auth_google, name='api_google_auth'),
     path('auth/logout/', views.auth_logout, name='api_logout'),
     path('auth/status/', views.auth_status, name='api_auth_status'),
     path('dashboard/', views.dashboard, name='api_dashboard'),
