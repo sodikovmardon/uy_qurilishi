@@ -86,6 +86,77 @@ interface AuthStatusResponse {
   user: User | null;
 }
 
+/** Parsed API error with machine-readable status + human message + field errors. */
+export class ApiError extends Error {
+  status: number;
+  fieldErrors: Record<string, string>;
+  constructor(message: string, status: number, fieldErrors: Record<string, string> = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+/** Human-readable fallback messages per HTTP status (Uzbek). */
+const STATUS_MESSAGES: Record<number, string> = {
+  400: 'So\'rov noto\'g\'ri kiritildi',
+  401: 'Login yoki parol noto\'g\'ri',
+  403: 'Ruxsat berilmadi',
+  404: 'Ma\'lumot topilmadi',
+  409: 'Bu telefon raqami allaqachon ro\'yxatdan o\'tgan',
+  429: 'Juda ko\'p so\'rov yuborildi. Iltimos, birozdan so\'ng qayta urinib ko\'ring',
+  500: 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring',
+  502: 'Server bilan bog\'lanishda xatolik',
+  503: 'Servis vaqtincha ishlamayapti',
+};
+
+function firstMessage(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return firstMessage(value[0]);
+  if (value && typeof value === 'object') {
+    const v = value as Record<string, unknown>;
+    return firstMessage(v.message ?? v.detail ?? Object.values(v)[0]);
+  }
+  return '';
+}
+
+/** Build an ApiError from a DRF/JSON response — handles error/detail/field dict shapes. */
+async function toApiError(res: Response): Promise<ApiError> {
+  const statusFallback = STATUS_MESSAGES[res.status] || 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring';
+  let body: unknown = null;
+  try {
+    body = await res.json();
+  } catch {
+    return new ApiError(statusFallback, res.status);
+  }
+  if (body && typeof body === 'object') {
+    const b = body as Record<string, unknown>;
+    if (typeof b.error === 'string' && b.error) {
+      return new ApiError(b.error, res.status);
+    }
+    if (typeof b.detail === 'string' && b.detail) {
+      let msg = b.detail;
+      // Map DRF's English throttle detail to a friendly Uzbek message.
+      if (/throttl/i.test(msg) || /expected available/i.test(msg)) {
+        msg = STATUS_MESSAGES[429] || 'Juda ko\'p so\'rov yuborildi. Iltimos, birozdan so\'ng qayta urinib ko\'ring';
+      }
+      return new ApiError(msg, res.status);
+    }
+    // Field-level validation dict, e.g. {"phone": ["..."]}.
+    const fieldErrors: Record<string, string> = {};
+    for (const [key, value] of Object.entries(b)) {
+      if (key === 'non_field_errors') continue;
+      const m = firstMessage(value);
+      if (m) fieldErrors[key] = m;
+    }
+    const nonField = firstMessage(b.non_field_errors);
+    const combined = Object.values(fieldErrors).join(', ') || nonField || statusFallback;
+    return new ApiError(combined, res.status, fieldErrors);
+  }
+  return new ApiError(statusFallback, res.status);
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const method = (options?.method || 'GET').toUpperCase();
   const headers: Record<string, string> = {
@@ -98,8 +169,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   }
   const res = await fetch(`${BASE_URL}${url}`, { ...options, headers, credentials: 'same-origin' });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || 'Server xatosi');
+    throw await toApiError(res);
   }
   return res.json();
 }
@@ -116,8 +186,7 @@ async function requestForm<T>(url: string, options?: RequestInit): Promise<T> {
   }
   const res = await fetch(`${BASE_URL}${url}`, { ...options, headers, credentials: 'same-origin' });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || 'Server xatosi');
+    throw await toApiError(res);
   }
   return res.json();
 }

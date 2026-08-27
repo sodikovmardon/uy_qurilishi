@@ -10,6 +10,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 import json
+import logging
+
+logger = logging.getLogger('api.auth')
 
 from api.drawings import (
     DrawingError,
@@ -283,17 +286,37 @@ def auth_signup(request):
 
     password_error = validate_password_policy(password, username=phone)
     if password_error:
+        logger.warning(
+            'auth.signup.reject.weak_password',
+            extra={'phone': phone, 'reason': 'weak_password'},
+        )
         return Response({'error': password_error}, status=400)
 
     if User.objects.filter(username=phone).exists():
-        return Response({'error': 'Ro\'yxatdan o\'tib bo\'lmadi, iltimos boshqa telefon raqam yoki parol bilan urinib ko\'ring'}, status=400)
+        logger.warning(
+            'auth.signup.reject.duplicate',
+            extra={'phone': phone, 'reason': 'duplicate_phone'},
+        )
+        return Response(
+            {'error': 'Bu telefon raqami allaqachon ro\'yxatdan o\'tgan'},
+            status=409,
+        )
 
-    user = User.objects.create_user(
-        username=phone,
-        password=password,
-        first_name=serializer.validated_data['name'],
-    )
-    login(request, user)
+    try:
+        user = User.objects.create_user(
+            username=phone,
+            password=password,
+            first_name=serializer.validated_data['name'],
+        )
+        login(request, user)
+    except Exception:
+        logger.exception('auth.signup.error', extra={'phone': phone})
+        return Response(
+            {'error': 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring'},
+            status=500,
+        )
+
+    logger.info('auth.signup.success', extra={'user_id': user.id, 'phone': phone})
     return Response({
         'id': user.id,
         'name': user.first_name,
@@ -317,18 +340,47 @@ def auth_login(request):
     username = serializer.validated_data['username']
 
     if login_blocked(username, request):
-        return Response({'error': 'Ko\'p marta xato urinish. 15 daqiqadan keyin qayta urinib ko\'ring'}, status=429)
+        logger.warning(
+            'auth.login.reject.lockout',
+            extra={'username': username, 'reason': 'lockout'},
+        )
+        return Response(
+            {'error': 'Ko\'p marta xato urinish. 15 daqiqadan keyin qayta urinib ko\'ring'},
+            status=429,
+        )
 
-    user = authenticate(
-        request,
-        username=username,
-        password=serializer.validated_data['password'],
-    )
+    try:
+        user = authenticate(
+            request,
+            username=username,
+            password=serializer.validated_data['password'],
+        )
+    except Exception:
+        logger.exception('auth.login.error.backend', extra={'username': username})
+        return Response(
+            {'error': 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring'},
+            status=500,
+        )
+
     if user is None:
         mark_failed_login(username, request)
+        logger.warning(
+            'auth.login.reject.bad_credentials',
+            extra={'username': username, 'reason': 'bad_credentials'},
+        )
         return Response({'error': 'Telefon raqam yoki parol noto\'g\'ri'}, status=401)
+
     clear_failed_logins(username, request)
-    login(request, user)
+    try:
+        login(request, user)
+    except Exception:
+        logger.exception('auth.login.error.session', extra={'username': username})
+        return Response(
+            {'error': 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring'},
+            status=500,
+        )
+
+    logger.info('auth.login.success', extra={'user_id': user.id, 'username': username})
     return Response({
         'id': user.id,
         'name': user.first_name,
@@ -382,6 +434,7 @@ def auth_google(request):
     picture = claims.get('picture', '')
 
     if not email:
+        logger.warning('auth.google.reject.no_email', extra={'reason': 'no_email'})
         return Response({'error': 'Google hisobida email topilmadi'}, status=401)
 
     username = f'google:{email}'
@@ -398,6 +451,10 @@ def auth_google(request):
         user.save()
 
     login(request, user)
+    logger.info(
+        'auth.google.success',
+        extra={'user_id': user.id, 'email': email, 'created': created},
+    )
     return Response({
         'id': user.id,
         'name': user.first_name,

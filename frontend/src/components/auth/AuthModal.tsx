@@ -139,8 +139,10 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     if (!phone.match(/^\+?\d{9,12}$/)) {
       errs.phone = "Telefon raqam noto'g'ri (masalan: +998901234567)";
     }
-    if (password.length < 4) {
-      errs.password = "Parol kamida 4 belgi bo'lishi kerak";
+    if (password.length < 8) {
+      errs.password = "Parol kamida 8 belgi bo'lishi kerak";
+    } else if (/^\d+$/.test(password)) {
+      errs.password = "Parol faqat raqamlardan iborat bo'lmasligi kerak";
     }
     if (tab === 'register' && name.trim().length < 2) {
       errs.name = 'Ismingizni kiriting';
@@ -165,7 +167,15 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
         onClose();
       });
     } catch (err: any) {
-      setErrors({ form: err.message || 'Xatolik yuz berdi' });
+      if (err?.fieldErrors && Object.keys(err.fieldErrors).length > 0) {
+        setErrors(err.fieldErrors);
+        const msg = err.message && err.message !== 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring'
+          ? err.message
+          : '';
+        setErrors((prev) => (msg ? { ...prev, form: msg } : prev));
+      } else {
+        setErrors({ form: err.message || 'Xatolik yuz berdi, birozdan so\'ng qaytadan urinib ko\'ring' });
+      }
     } finally {
       setLoading(false);
     }
@@ -188,7 +198,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
     !loading &&
     (tab === 'login' || name.trim().length >= 2) &&
     /^\+?\d{9,12}$/.test(phone) &&
-    password.length >= 4;
+    password.length >= 8;
 
   return (
     <AnimatePresence>

@@ -168,8 +168,8 @@ REST_FRAMEWORK = {
         'store_admin': '300/min',
         'calc': '180/min',
         'orders': '30/min',
-        'auth': '20/hour',
-        'signup': '10/hour',
+        'auth': '60/hour',
+        'signup': '30/hour',
         'chat': '40/min',
         'files': '60/min',
     },
@@ -354,3 +354,37 @@ if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ---- Logging ----
+# Structured, timestamped auth events (success/failure/lockout) so issues are
+# diagnosable from `railway logs` alone. Sensitive data (passwords, tokens,
+# full request bodies) is never logged.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'structured': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
+            'datefmt': '%Y-%m-%dT%H:%M:%S%z',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'structured',
+        },
+    },
+    'loggers': {
+        'api.auth': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}

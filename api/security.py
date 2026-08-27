@@ -31,16 +31,26 @@ class IPOnlyThrottle(SimpleRateThrottle):
     never actually throttles. Subclasses pin a scope and always key on IP.
     """
 
+    THROTTLE_MSG = 'Juda ko\'p so\'rov yuborildi. Iltimos, birozdan so\'ng qayta urinib ko\'ring'
+
     def get_cache_key(self, request, view):
         return self.cache_format % {'scope': self.scope, 'ident': self.get_ident(request)}
+
+    def allow_request(self, request, view):
+        allowed = super().allow_request(request, view)
+        if not allowed:
+            self.wait = lambda: None
+        return allowed
 
 
 class AuthThrottle(IPOnlyThrottle):
     scope = 'auth'
+    THROTTLE_MSG = 'Kirish vaqtincha cheklandi. Iltimos, birozdan so\'ng qayta urinib ko\'ring'
 
 
 class SignupThrottle(IPOnlyThrottle):
     scope = 'signup'
+    THROTTLE_MSG = 'Ro\'yxatdan o\'tish vaqtincha cheklandi. Iltimos, birozdan so\'ng qayta urinib ko\'ring'
 
 
 class ChatThrottle(IPOnlyThrottle):
