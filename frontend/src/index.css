@@ -10012,119 +10012,6 @@ button.drawing-card {
   }
 }
 
-/* ------------------------------------------------------------
-   LAND PLOT CTA (landing band)
-   ------------------------------------------------------------ */
-.land-plot-cta {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 24px;
-  align-items: center;
-  padding: 32px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-card);
-  background: linear-gradient(135deg, var(--accent-soft), var(--bg-card));
-  overflow: hidden;
-}
-
-.land-plot-cta-text {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.land-plot-cta-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  align-self: flex-start;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(52, 199, 89, 0.15);
-  color: #22C55E;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.land-plot-cta-text h2 {
-  font-size: 24px;
-}
-
-.land-plot-cta-text p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  max-width: 46ch;
-}
-
-.land-plot-cta-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 4px 0 6px;
-}
-
-.land-plot-cta-steps span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.land-plot-cta-steps svg {
-  color: var(--accent);
-  width: 16px;
-  height: 16px;
-}
-
-.land-plot-cta-visual {
-  display: flex;
-  justify-content: center;
-}
-
-.land-plot-cta-svg {
-  width: 100%;
-  max-width: 300px;
-  height: auto;
-}
-
-.cta-plot {
-  fill: var(--hover-overlay);
-  stroke: var(--border-card-hover);
-  stroke-width: 1;
-}
-
-.cta-zone {
-  fill: none;
-  stroke: #22C55E;
-  stroke-width: 0.8;
-  stroke-dasharray: 2.5 2;
-}
-
-.cta-house {
-  fill: rgba(59, 130, 246, 0.35);
-  stroke: var(--accent);
-  stroke-width: 0.8;
-}
-
-.cta-label {
-  fill: var(--text-secondary);
-  font-size: 7px;
-  font-weight: 600;
-}
-
-@media (max-width: 720px) {
-  .land-plot-cta {
-    grid-template-columns: 1fr;
-    padding: 24px;
-  }
-
-  .land-plot-cta-visual {
-    display: none;
-  }
-}
-
 .plot-pick-row {
   display: flex;
   gap: 8px;
@@ -12320,15 +12207,6 @@ button.drawing-card {
   /* How It Works steps stack vertically */
   .how-steps {
     gap: 20px;
-  }
-
-  /* CTA section tighter */
-  .land-plot-cta {
-    padding: 20px;
-  }
-
-  .land-plot-cta-text h2 {
-    font-size: 20px;
   }
 
   /* Comparison grid tighter */

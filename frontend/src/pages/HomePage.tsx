@@ -4,7 +4,6 @@ import { StatCards } from '../components/landing/StatCards';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { WhyUs } from '../components/landing/WhyUs';
 import { FeaturedProjects } from '../components/landing/FeaturedProjects';
-import { LandPlotCta } from '../components/landing/LandPlotCta';
 
 /**
  * Home page — lightweight landing: hero → stats → how it works → why us →
@@ -25,7 +24,6 @@ export function HomePage() {
       </motion.div>
 
       <HowItWorks />
-      <LandPlotCta />
       <WhyUs />
       <FeaturedProjects />
     </div>
