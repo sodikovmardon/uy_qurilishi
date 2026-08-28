@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AlertTriangle, ChevronDown, ExternalLink, RefreshCw, Settings2, ShoppingBag, Store, Trash2 } from 'lucide-react';
 import { BRICK_TYPES, DEFAULT_INPUTS, DEFAULT_MATERIAL_PRICES, getDefaultBrickPrice, WALL_THICKNESS } from '../../config/prices';
 import { REGIONS } from '../../config/regions';
+import { useGlassTrack } from '../../hooks/useGlassTrack';
 import {
   calculateMaterials,
   formatUZS,
@@ -70,6 +71,10 @@ export default function CalculatorSection() {
   const { showToast } = useApp();
   const navigate = useNavigate();
   const compare = useCompareSelection(2);
+
+  const trackBricksRef = useGlassTrack<HTMLDivElement>();
+  const trackCementRef = useGlassTrack<HTMLDivElement>();
+  const trackSandRef = useGlassTrack<HTMLDivElement>();
 
   const [wallLength, setWallLength] = useState(DEFAULT_INPUTS.wallLength);
   const [wallHeight, setWallHeight] = useState(DEFAULT_INPUTS.wallHeight);
@@ -596,21 +601,21 @@ export default function CalculatorSection() {
                 <h3 className="step-title">{t('calc.step2')}</h3>
 
               <div className="metric-grid">
-                <div className="metric-tile">
+                <div className="metric-tile glass-card--track" ref={trackBricksRef}>
                   <span className="tile-label">{t('calc.bricks')}</span>
                   <strong>
                     <AnimatedValue value={result.bricks}>{result.bricks.toLocaleString('ru-RU')}</AnimatedValue>
                   </strong>
                   <span className="tile-sub">dona</span>
                 </div>
-                <div className="metric-tile">
+                <div className="metric-tile glass-card--track" ref={trackCementRef}>
                   <span className="tile-label">{t('calc.cement')}</span>
                   <strong>
                     <AnimatedValue value={result.cementBags}>{result.cementBags.toLocaleString('ru-RU')}</AnimatedValue>
                   </strong>
                   <span className="tile-sub">qop (50 kg)</span>
                 </div>
-                <div className="metric-tile">
+                <div className="metric-tile glass-card--track" ref={trackSandRef}>
                   <span className="tile-label">{t('calc.sand')}</span>
                   <strong>
                     <AnimatedValue value={result.sandM3}>{result.sandM3}</AnimatedValue>

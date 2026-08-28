@@ -211,7 +211,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={(e) => e.target === overlayRef.current && onClose()}
-          style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+          }}
         >
           <div
             className="absolute inset-0 overflow-hidden pointer-events-none"
@@ -247,9 +251,11 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           <motion.div
             className="relative w-full max-w-sm sm:rounded-2xl rounded-t-2xl rounded-b-none border shadow-[0_25px_60px_rgba(0,0,0,0.2)] overflow-hidden sm:max-h-[85vh] max-h-[92vh]"
             style={{
-              backgroundColor: 'var(--bg-panel)',
-              backdropFilter: 'blur(24px)',
-              borderColor: 'var(--border-panel)',
+              background: 'var(--glass-card-bg)',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+              boxShadow: 'var(--glass-card-inner)',
+              borderColor: 'var(--glass-card-border)',
             }}
             initial={{ opacity: 0, scale: 0.88, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

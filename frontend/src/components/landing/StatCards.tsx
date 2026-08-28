@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { FolderOpen, Target, PiggyBank, Bot, type LucideIcon } from 'lucide-react';
 import { useCountAnimation } from '../../hooks/useCountAnimation';
 import { useInView } from '../../hooks/useInView';
+import { useGlassTrack } from '../../hooks/useGlassTrack';
 import { t } from '../../lib/i18n';
 
 interface StatCardConfig {
@@ -79,6 +80,35 @@ function StatValue({ card, active }: { card: StatCardConfig; active: boolean }) 
   return <span className="stat-value">{card.format(count)}</span>;
 }
 
+function StatCardItem({ card, active }: { card: StatCardConfig; active: boolean }) {
+  const Icon = card.icon;
+  const trackRef = useGlassTrack<HTMLDivElement>();
+  return (
+    <motion.div
+      key={card.id}
+      variants={cardVariants}
+      ref={trackRef}
+      className={`stat-card glass-card glass-card--track ${ACCENT_CLASS[card.id] ?? ''}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="stat-icon" style={{ background: card.gradient }}>
+          <Icon className="w-6 h-6" />
+        </div>
+        {card.live && (
+          <span className="live-badge">
+            <span className="live-dot" aria-hidden="true" />
+            {t('stat.live')}
+          </span>
+        )}
+      </div>
+      <div className="stat-value-wrap">
+        <StatValue card={card} active={active} />
+      </div>
+      <p className="stat-label">{card.label}</p>
+    </motion.div>
+  );
+}
+
 /**
  * Statistics section — glassmorphic cards with scroll-triggered count-up.
  * Metrics are curated marketing figures; counter animates via IntersectionObserver.
@@ -95,28 +125,9 @@ export function StatCards() {
       whileInView="visible"
       viewport={{ once: true, margin: '-40px' }}
     >
-      {STATS.map((card) => {
-        const Icon = card.icon;
-        return (
-          <motion.div key={card.id} variants={cardVariants} className={`stat-card glass-card ${ACCENT_CLASS[card.id] ?? ''}`}>
-            <div className="flex items-center justify-between">
-              <div className="stat-icon" style={{ background: card.gradient }}>
-                <Icon className="w-6 h-6" />
-              </div>
-              {card.live && (
-                <span className="live-badge">
-                  <span className="live-dot" aria-hidden="true" />
-                  {t('stat.live')}
-                </span>
-              )}
-            </div>
-            <div className="stat-value-wrap">
-              <StatValue card={card} active={inView} />
-            </div>
-            <p className="stat-label">{card.label}</p>
-          </motion.div>
-        );
-      })}
+      {STATS.map((card) => (
+        <StatCardItem key={card.id} card={card} active={inView} />
+      ))}
     </motion.div>
   );
 }

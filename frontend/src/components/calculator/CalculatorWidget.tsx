@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BrickWall, Package, Truck, Building2, HardHat, Minus, Plus, Loader2 } from 'lucide-react';
 import { useCalculator } from '../../hooks/useCalculator';
+import { useGlassTrack } from '../../hooks/useGlassTrack';
 import { AnimatedValue } from '../ui/AnimatedValue';
 
 interface CalculatorWidgetProps {
@@ -27,6 +28,35 @@ const MIN_AREA = 50;
 const MAX_AREA = 2000;
 const MIN_ROOMS = 1;
 const MAX_ROOMS = 20;
+
+function CalcTile({ tile, value, loading }: { tile: TileConfig; value: number; loading: boolean }) {
+  const Icon = tile.icon;
+  const trackRef = useGlassTrack<HTMLDivElement>();
+  const showDash = loading || typeof value !== 'number' || !Number.isFinite(value);
+  return (
+    <div
+      ref={trackRef}
+      className={`calc-tile glass-card glass-card--track glass-accent-${tile.iconClass.replace('tile-icon-', '')}`}
+    >
+      <div className={`calc-tile-icon ${tile.iconClass}`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <p className="calc-tile-value">
+        {loading ? (
+          <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--accent)' }} />
+        ) : showDash ? (
+          '—'
+        ) : (
+          <AnimatedValue value={value}>
+            {value.toLocaleString('ru-RU')}
+            <span className="calc-tile-suffix">{tile.suffix}</span>
+          </AnimatedValue>
+        )}
+      </p>
+      <p className="calc-tile-label">{tile.label}</p>
+    </div>
+  );
+}
 
 /**
  * Reusable live calculator.
@@ -119,31 +149,9 @@ export function CalculatorWidget({ compact = false }: CalculatorWidgetProps) {
 
       {/* Dynamic results */}
       <div className="calc-tile-grid">
-        {tiles.map((tile) => {
-          const Icon = tile.icon;
-          const value = result[tile.key];
-          const showDash = result.error || typeof value !== 'number' || !Number.isFinite(value);
-          return (
-            <div key={tile.key} className={`calc-tile glass-card glass-accent-${tile.iconClass.replace('tile-icon-', '')}`}>
-              <div className={`calc-tile-icon ${tile.iconClass}`}>
-                <Icon className="w-6 h-6" />
-              </div>
-              <p className="calc-tile-value">
-                {result.loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--accent)' }} />
-                ) : showDash ? (
-                  '—'
-                ) : (
-                  <AnimatedValue value={value}>
-                    {value.toLocaleString('ru-RU')}
-                    <span className="calc-tile-suffix">{tile.suffix}</span>
-                  </AnimatedValue>
-                )}
-              </p>
-              <p className="calc-tile-label">{tile.label}</p>
-            </div>
-          );
-        })}
+        {tiles.map((tile) => (
+          <CalcTile key={tile.key} tile={tile} value={result[tile.key]} loading={result.loading} />
+        ))}
       </div>
 
       <p className="calc-widget-note">

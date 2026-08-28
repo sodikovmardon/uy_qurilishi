@@ -298,6 +298,9 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(var(--glass-widget-blur)) saturate(160%);
+  backdrop-filter: blur(var(--glass-widget-blur)) saturate(160%);
 }
 
 /* Hero badge — AI pill above the heading with one-shot sparkle pop */
@@ -325,12 +328,35 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: scale(1) rotate(0deg); }
 }
 
-/* Number tiles for calculator output */
+/* Number tiles for calculator output — liquid glass breakout tiles */
 .metric-tile {
-  border: 1px solid var(--border-card);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-card-border);
   border-radius: var(--radius-lg);
   padding: 16px;
-  background: var(--hover-overlay);
+  background: var(--glass-card-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--glass-card-inner);
+}
+
+.metric-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--glass-card-sheen);
+  z-index: 0;
+}
+
+.metric-tile > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Form field wrapper + label */
@@ -2726,6 +2752,8 @@ select.control {
 }
 
 .toast {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2738,6 +2766,21 @@ select.control {
   font-weight: 500;
   color: var(--toast-text);
   animation: toast-in 0.25s ease;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;
+  background: var(--glass-card-sheen);
+}
+
+.toast > * {
+  position: relative;
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
@@ -3194,13 +3237,36 @@ select.control {
 }
 
 .spec-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-  border: 1px solid var(--border-card);
+  border: 1px solid var(--glass-card-border);
   border-radius: var(--radius-lg);
-  background: var(--bg-card);
+  background: var(--glass-card-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--glass-card-inner);
+}
+
+.spec-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--glass-card-sheen);
+  z-index: 0;
+}
+
+.spec-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .spec-card-icon {
@@ -4991,13 +5057,29 @@ textarea:focus-visible,
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: #fff;
   background: linear-gradient(180deg, #2F7CFF, #0051A8);
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.25);
   cursor: pointer;
   animation: chat-fab-pulse 3s ease-in-out infinite;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.chat-fab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.28) 0%, transparent 55%);
+}
+
+.chat-fab > * {
+  position: relative;
 }
 
 .chat-fab:hover {
@@ -5750,6 +5832,9 @@ textarea:focus-visible,
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(var(--glass-widget-blur)) saturate(160%);
+  backdrop-filter: blur(var(--glass-widget-blur)) saturate(160%);
 }
 
 .stock-in {
@@ -7244,7 +7329,9 @@ textarea:focus-visible,
   position: fixed;
   inset: 0;
   z-index: 145;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--glass-overlay-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm));
+  backdrop-filter: blur(var(--glass-blur-sm));
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s var(--ease-out), visibility 0.25s;
@@ -7261,8 +7348,11 @@ textarea:focus-visible,
   right: 0;
   bottom: 0;
   width: min(400px, 100vw);
-  background: var(--bg-card);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
+  background: var(--glass-card-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.25);
+  border-left: 1px solid var(--glass-card-border);
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
@@ -8486,7 +8576,7 @@ button.drawing-card {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+  @media (prefers-reduced-motion: reduce) {
   .glass-card,
   .glass-card::before,
   .glass-card::after {
@@ -8496,6 +8586,140 @@ button.drawing-card {
   .glass-card:hover,
   .glass-card:hover::before {
     transform: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   LIQUID GLASS SURFACE (Phase 16) — canonical single source of truth
+   for every frosted/floating surface in the app: headers, bottom nav,
+   modals/panels, dropdowns, toasts, FABs, badges and cards.
+   Same blur / gradient / radius / shadow values as .glass-card (and
+   Qurilish Bazasi) so every surface reads as one design language.
+
+   Usage:
+     .glass-surface                 standard frosted surface (headers, modals, panels)
+     .glass-surface--text           opaque variant for dense text (settings, descriptions)
+     .glass-surface--track          icon-forward cards w/ cursor-following specular
+     .glass-surface--grid           dense grids — reduced blur for perf
+   ------------------------------------------------------------ */
+
+.glass-surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--glass-card-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: var(--glass-card-inner);
+}
+
+/* Specular sheen across the top half (shared everywhere glass is used). */
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  pointer-events: none;
+  border-radius: inherit;
+  background: var(--glass-card-sheen);
+  z-index: 0;
+}
+
+.glass-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Interactive surface: lift + sheen sweep on hover, tap-shrink on press. */
+.glass-surface--interactive {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    border-color 0.3s ease;
+}
+
+.glass-surface--interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-card-inner), 0 16px 40px rgba(0, 0, 0, 0.22);
+  border-color: color-mix(in srgb, var(--glass-card-border) 70%, var(--accent));
+}
+
+@media (hover: none) {
+  .glass-surface--interactive:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Opaque variant for text-heavy surfaces — keeps dense content readable. */
+.glass-surface--text {
+  background: var(--glass-card-fallback-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.glass-surface--text::before {
+  display: none;
+}
+
+/* Cursor-following specular highlight (icon-forward cards only). */
+.glass-surface--track,
+.glass-card--track {
+  background-image: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 30%),
+    rgba(255, 255, 255, 0.08),
+    transparent 40%
+  ), var(--glass-card-bg);
+  background-blend-mode: overlay, normal;
+}
+
+/* Dense grid variant — cheaper blur for scroll performance on mobile. */
+.glass-surface--grid,
+.glass-card--grid-dense {
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+
+/* Light mode: glass reads glossy against light surroundings (dark tint + white sheen). */
+:root:not(.dark) .glass-surface--track,
+:root:not(.dark) .glass-card--track {
+  background-image: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 30%),
+    rgba(255, 255, 255, 0.75),
+    transparent 40%
+  ), var(--glass-card-bg);
+  background-blend-mode: overlay, normal;
+}
+
+/* Fallback: unsupported backdrop-filter → solid opaque surface, never transparent. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-surface,
+  .glass-surface--interactive,
+  .glass-surface--grid,
+  .glass-card--grid-dense {
+    background: var(--glass-card-fallback-bg);
+  }
+
+  .glass-surface--track,
+  .glass-card--track {
+    background-image: none;
+    background: var(--glass-card-fallback-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-surface--interactive,
+  .glass-surface--interactive:hover,
+  .glass-surface::before {
+    transition: none;
+    transform: none;
+  }
+
+  /* No cursor-tracking glow under reduced motion — keep static glass only. */
+  .glass-surface--track,
+  .glass-card--track {
+    background-image: var(--glass-card-bg);
   }
 }
 
