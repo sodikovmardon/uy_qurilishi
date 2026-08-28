@@ -346,7 +346,7 @@ export function ProjectsPage() {
         </div>
       ) : filtered.length === 0 && matchingCalc ? (
         <div className="card-surface flex flex-col items-center justify-center gap-3 py-16 text-center px-4 fade-in">
-          <div className="stat-icon">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             <LandPlot className="w-8 h-8" />
           </div>
           <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>

@@ -212,7 +212,7 @@ export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
           transition={{ duration: 0.2 }}
           onClick={(e) => e.target === overlayRef.current && onClose()}
           style={{
-            backgroundColor: 'rgba(0,0,0,0.55)',
+            backgroundColor: 'rgba(15,23,42,0.45)',
             backdropFilter: 'blur(6px)',
             WebkitBackdropFilter: 'blur(6px)',
           }}

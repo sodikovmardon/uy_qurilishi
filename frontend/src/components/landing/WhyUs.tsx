@@ -6,6 +6,7 @@ interface Benefit {
   icon: LucideIcon;
   title: string;
   text: string;
+  gradient: string;
 }
 
 const BENEFITS: Benefit[] = [
@@ -13,21 +14,25 @@ const BENEFITS: Benefit[] = [
     icon: BadgeCheck,
     title: 'Aniq hisob-kitob',
     text: 'Xatolarga yo’l qo’ymaslik uchun material miqdori formula asosida aniq hisoblanadi.',
+    gradient: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
   },
   {
     icon: Store,
     title: 'Real narxlar',
     text: 'Do’kon katalogi bilan bog’langan narxlar sizga haqiqiy bozor qiymatini ko’rsatadi.',
+    gradient: 'linear-gradient(135deg, #10B981, #047857)',
   },
   {
     icon: Bot,
     title: 'AI yordam',
     text: 'Aqlli yordamchi savollaringizga javob beradi va hisob-kitobda yo’l ko’rsatadi.',
+    gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
   },
   {
     icon: Wallet,
     title: 'Do’kon integratsiyasi',
     text: 'Natijalarni savatga yuborib, materiallarni to’g’ridan-to’g’ri buyurtma qiling.',
+    gradient: 'linear-gradient(135deg, #F59E0B, #B45309)',
   },
 ];
 
@@ -61,7 +66,7 @@ export function WhyUs() {
           const Icon = b.icon;
           return (
             <motion.div key={b.title} variants={itemVariants} className="card-surface why-card">
-              <div className="stat-icon">
+              <div className="stat-icon" style={{ background: b.gradient }}>
                 <Icon className="w-6 h-6" />
               </div>
               <h3>{b.title}</h3>

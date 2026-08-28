@@ -63,7 +63,7 @@ export function HowItWorks() {
             <motion.div key={step.title} variants={itemVariants} className="card-surface step-card">
               <div className="step-card-top">
                 <span className="step-card-num">{i + 1}</span>
-                <div className="stat-icon">
+                <div className="step-icon">
                   <Icon className="w-6 h-6" />
                 </div>
               </div>

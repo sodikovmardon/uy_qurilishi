@@ -172,7 +172,7 @@ export default function PlotMatcherPanel({ projects, onMatch, onOpenProject, onC
     <section className="plot-matcher card-surface fade-in" aria-label="Uchastkangizga mos loyiha toping">
       <div className="plot-matcher-head">
         <div className="plot-matcher-title">
-          <span className="stat-icon">
+          <span className="stat-icon" style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             <LandPlot className="w-5 h-5" />
           </span>
           <div>

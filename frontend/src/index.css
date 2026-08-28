@@ -40,48 +40,51 @@
   --radius-xl: 28px;
   --radius-pill: 999px;
 
-  /* surfaces & borders */
-  --bg-canvas: #F5F6F8;
+  /* surfaces & borders — cool-tinted light palette (Phase 16.1) */
+  --bg-canvas: #EEF2FA;
   --bg-panel: rgba(255, 255, 255, 0.78);
   --bg-card: #FFFFFF;
+  --bg-subtle: #F1F5F9;
   --border-panel: rgba(255, 255, 255, 0.7);
-  --border-card: rgba(0, 0, 0, 0.06);
-  --border-card-hover: rgba(0, 0, 0, 0.12);
+  --border-card: rgba(15, 23, 42, 0.06);
+  --border-card-hover: rgba(15, 23, 42, 0.14);
+  --border-soft: rgba(15, 23, 42, 0.08);
 
-  /* text */
-  --text-primary: #1A1A1F;
-  --text-secondary: #5B6472;
-  --text-muted: #6E7480;
+  /* text — navy/slate, softer than pure black */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
 
-  /* elevation */
-  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.04), 0 20px 40px rgba(0, 0, 0, 0.06);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.05), 0 12px 24px rgba(0, 0, 0, 0.08);
+  /* elevation — soft cool shadows so cards float above the tinted canvas */
+  --shadow-panel: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 40px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 2px 4px rgba(15, 23, 42, 0.06), 0 14px 30px rgba(15, 23, 42, 0.1);
 
-  /* inputs & states */
-  --hover-overlay: rgba(0, 0, 0, 0.04);
-  --input-bg: #ffffff;
-  --input-border: rgba(0, 0, 0, 0.08);
-  --range-track: rgba(0, 0, 0, 0.1);
-  --stepper-bg: rgba(0, 0, 0, 0.045);
+  /* inputs & states — cool gray-blue fills, never pure white */
+  --hover-overlay: rgba(15, 23, 42, 0.05);
+  --input-bg: #F1F5F9;
+  --input-border: rgba(15, 23, 42, 0.08);
+  --range-track: rgba(15, 23, 42, 0.1);
+  --stepper-bg: rgba(15, 23, 42, 0.06);
 
   /* accents */
   --accent: #007AFF;
+  --accent-strong: #2563EB;
   --accent-2: #4DA3FF;
-  --accent-glow: rgba(10, 132, 255, 0.35);
+  --accent-glow: rgba(37, 99, 235, 0.25);
   --chip-bg: rgba(59, 130, 246, 0.1);
   --chip-text: #2563EB;
 
-  /* material accent tokens (hero calculator tiles) */
-  --accent-orange: #FF9500;
-  --accent-blue: #007AFF;
-  --accent-green: #34C759;
-  --accent-purple: #AF52DE;
-  --accent-teal: #00BFA6;
-  --accent-pink: #FF2D92;
-  --accent-amber: #F5A623;
-  --accent-cyan: #00B8D9;
-  --accent-indigo: #5856D6;
+  /* material accent tokens (hero calculator tiles) — deepened for light bg */
+  --accent-orange: #EA580C;
+  --accent-blue: #2563EB;
+  --accent-green: #16A34A;
+  --accent-purple: #7C3AED;
+  --accent-teal: #0D9488;
+  --accent-pink: #DB2777;
+  --accent-amber: #D97706;
+  --accent-cyan: #0E7490;
+  --accent-indigo: #4F46E5;
 
   /* glassmorphic stat cards */
   --stat-border: rgba(255, 255, 255, 0.7);
@@ -89,44 +92,44 @@
   /* sticky glass header + nav */
   --header-bg: rgba(255, 255, 255, 0.72);
   --header-scrolled-bg: rgba(255, 255, 255, 0.86);
-  --header-border: rgba(0, 0, 0, 0.08);
-  --nav-text: #5B6472;
-  --nav-hover-text: #1A1A1F;
-  --nav-hover-bg: rgba(0, 0, 0, 0.05);
-  --nav-active-bg: rgba(59, 130, 246, 0.1);
+  --header-border: rgba(15, 23, 42, 0.08);
+  --nav-text: #64748B;
+  --nav-hover-text: #0F172A;
+  --nav-hover-bg: rgba(15, 23, 42, 0.05);
+  --nav-active-bg: rgba(59, 130, 246, 0.12);
   --nav-active-text: #2563EB;
 
   /* glassmorphism tokens — frosted accents for layered/floating surfaces (Phase 10.5) */
-  --glass-fallback: #FFFFFF;
+  --glass-fallback: #EEF2FA;
   --glass-bg: rgba(255, 255, 255, 0.72);
   --glass-bg-strong: rgba(255, 255, 255, 0.86);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-overlay-bg: rgba(0, 0, 0, 0.55);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-overlay-bg: rgba(15, 23, 42, 0.45);
   --glass-blur-sm: 6px;
   --glass-blur-md: 12px;
   --glass-blur: 16px;
   --glass-blur-lg: 20px;
-  --glass-fab-bg: rgba(59, 130, 246, 0.9);
+  --glass-fab-bg: rgba(37, 99, 235, 0.92);
   --glass-fab-blur: 10px;
   --glass-widget-bg: rgba(255, 255, 255, 0.72);
   --glass-widget-blur: 8px;
   --glass-toast-bg: rgba(255, 255, 255, 0.92);
 
-  /* liquid-glass cards (Phase 14) — light: dark tint + white specular */
-  --glass-card-bg: linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.01) 100%);
-  --glass-card-border: rgba(0, 0, 0, 0.09);
-  --glass-card-sheen: linear-gradient(120deg, rgba(255, 255, 255, 0.6) 0%, transparent 40%);
-  --glass-card-inner: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -1px 1px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.18);
+  /* liquid-glass cards (Phase 14) — light: white-glow frosted on cool canvas */
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%);
+  --glass-card-border: rgba(15, 23, 42, 0.08);
+  --glass-card-sheen: linear-gradient(120deg, rgba(255, 255, 255, 0.9) 0%, transparent 60%);
+  --glass-card-inner: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 8px 32px rgba(15, 23, 42, 0.08);
   --glass-card-accent: transparent;
   --glass-card-fallback-bg: #FFFFFF;
 
   /* floating toasts / tooltips (light glass in light mode, dark in dark mode) */
   --toast-bg: rgba(255, 255, 255, 0.92);
-  --toast-border: rgba(0, 0, 0, 0.08);
-  --toast-text: #1A1A1F;
-  --toast-close: rgba(0, 0, 0, 0.45);
-  --toast-close-hover-bg: rgba(0, 0, 0, 0.06);
-  --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --toast-border: rgba(15, 23, 42, 0.08);
+  --toast-text: #0F172A;
+  --toast-close: rgba(15, 23, 42, 0.5);
+  --toast-close-hover-bg: rgba(15, 23, 42, 0.06);
+  --toast-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 
   /* motion tokens — app-wide transition/easing scale (matches Qurilish Bazasi) */
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -139,8 +142,8 @@
   --transition-slow: var(--duration-slow) var(--ease-standard);
 
   /* chat assistant tokens */
-  --chat-ai-bg: #EFF1F4;
-  --chat-ai-border: rgba(0, 0, 0, 0.05);
+  --chat-ai-bg: #F1F5F9;
+  --chat-ai-border: rgba(15, 23, 42, 0.06);
 }
 
 .dark {
@@ -241,6 +244,17 @@ body {
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
   min-height: 100dvh;
+}
+
+/* App shell — light mode gets a barely-perceptible cool gradient bloom that
+   adds depth without distracting (Phase 16.1); dark mode stays flat black. */
+.app-shell {
+  background-image: radial-gradient(1100px 520px at 85% -5%, rgba(99, 102, 241, 0.045), transparent 60%),
+    radial-gradient(900px 460px at -8% 12%, rgba(59, 130, 246, 0.05), transparent 55%);
+}
+
+:root.dark .app-shell {
+  background-image: none;
 }
 
 /* Ensure all images are responsive */
@@ -1578,6 +1592,21 @@ select.control {
   box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.4);
 }
 
+/* Step card icon container (HowItWorks) — Option A: solid brand blue + white icon,
+   always visible in both light and dark themes (stat-icon has no background by
+   default, so a white icon would otherwise vanish on white cards). */
+.step-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  box-shadow: 0 6px 16px -6px rgba(37, 99, 235, 0.5);
+}
+
 .stat-value {
   font-size: 30px;
   font-weight: 800;
@@ -2889,7 +2918,7 @@ select.control {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.28);
   animation: modal-in 0.2s ease;
 }
 
@@ -8541,15 +8570,15 @@ button.drawing-card {
 }
 
 /* Per-accent tints (matched to the tile-icon-* palette) */
-.glass-accent-orange { --glass-card-accent: rgba(255, 149, 0, 0.06); }
-.glass-accent-blue { --glass-card-accent: rgba(0, 122, 255, 0.06); }
-.glass-accent-green { --glass-card-accent: rgba(52, 199, 89, 0.06); }
-.glass-accent-purple { --glass-card-accent: rgba(175, 82, 222, 0.06); }
-.glass-accent-teal { --glass-card-accent: rgba(0, 191, 166, 0.06); }
-.glass-accent-pink { --glass-card-accent: rgba(255, 45, 146, 0.06); }
-.glass-accent-amber { --glass-card-accent: rgba(245, 166, 35, 0.06); }
-.glass-accent-cyan { --glass-card-accent: rgba(0, 184, 217, 0.06); }
-.glass-accent-indigo { --glass-card-accent: rgba(88, 86, 214, 0.06); }
+.glass-accent-orange { --glass-card-accent: rgba(249, 115, 22, 0.035); }
+.glass-accent-blue { --glass-card-accent: rgba(59, 130, 246, 0.035); }
+.glass-accent-green { --glass-card-accent: rgba(16, 185, 129, 0.035); }
+.glass-accent-purple { --glass-card-accent: rgba(139, 92, 246, 0.035); }
+.glass-accent-teal { --glass-card-accent: rgba(20, 184, 166, 0.035); }
+.glass-accent-pink { --glass-card-accent: rgba(236, 72, 153, 0.035); }
+.glass-accent-amber { --glass-card-accent: rgba(245, 158, 11, 0.035); }
+.glass-accent-cyan { --glass-card-accent: rgba(6, 182, 212, 0.035); }
+.glass-accent-indigo { --glass-card-accent: rgba(99, 102, 241, 0.035); }
 
 /* Stat cards share the liquid-glass treatment (Qurilish Bazasi hero-stat). */
 .stat-card.glass-card {

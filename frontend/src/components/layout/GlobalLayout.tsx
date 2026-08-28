@@ -30,7 +30,7 @@ export function GlobalLayout({ children, onAuthOpen, user, onLogout }: GlobalLay
 
   return (
     <div
-      className="min-h-screen flex flex-col transition-colors duration-300"
+      className="app-shell min-h-screen flex flex-col transition-colors duration-300"
       style={{ backgroundColor: 'var(--bg-canvas)' }}
     >
       <ProgressBar />
