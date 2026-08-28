@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, FolderOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, FolderOpen, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { t } from '../../lib/i18n';
 
@@ -77,7 +77,7 @@ export function Hero() {
         <div className="card-surface p-6">
           <div className="flex items-center gap-3 mb-4">
             <span className="stat-icon" style={{ background: 'linear-gradient(135deg, var(--accent-green), #047857)' }}>
-              <Sparkles className="w-6 h-6" />
+              <Store className="w-6 h-6" />
             </span>
             <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Do'kon bilan bog'langan narxlar</p>
           </div>
