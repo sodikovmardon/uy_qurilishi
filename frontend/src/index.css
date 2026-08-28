@@ -90,9 +90,9 @@
   --stat-border: rgba(255, 255, 255, 0.7);
 
   /* sticky glass header + nav */
-  --header-bg: rgba(255, 255, 255, 0.72);
-  --header-scrolled-bg: rgba(255, 255, 255, 0.86);
-  --header-border: rgba(15, 23, 42, 0.08);
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-scrolled-bg: rgba(255, 255, 255, 0.97);
+  --header-border: rgba(15, 23, 42, 0.1);
   --nav-text: #64748B;
   --nav-hover-text: #0F172A;
   --nav-hover-bg: rgba(15, 23, 42, 0.05);
@@ -170,6 +170,7 @@
   --stepper-bg: rgba(255, 255, 255, 0.05);
 
   --accent: #0A84FF;
+  --accent-strong: #0060DF;
   --accent-2: #4DA3FF;
   --accent-glow: rgba(10, 132, 255, 0.35);
   --chip-bg: rgba(10, 132, 255, 0.16);
@@ -1664,8 +1665,8 @@ select.control {
 
   .app-header.is-scrolled {
     background: var(--header-scrolled-bg);
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 1px 0 0 var(--header-border), 0 4px 24px -4px rgba(0, 0, 0, 0.12);
+    border-bottom-color: var(--header-border);
+    box-shadow: 0 1px 0 0 var(--header-border), 0 6px 24px -6px rgba(15, 23, 42, 0.18);
   }
 }
 
@@ -1804,8 +1805,12 @@ select.control {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding: 0;
   border: 1px solid var(--header-border);
   border-radius: 50%;
   background: transparent;
@@ -12021,10 +12026,12 @@ button.drawing-card {
     height: 44px;
   }
 
-  /* Theme toggle larger tap target */
+  /* Theme toggle larger tap target — keep a perfect circle */
   .theme-toggle {
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
   }
 
   /* Toast close button larger tap target */
