@@ -95,6 +95,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const open = useCallback(
     (prompt?: string) => {
       setIsOpen(true);
+      window.dispatchEvent(new CustomEvent('ui:modal', { detail: true }));
       if (!prompt) return;
       // Defer so the panel mounts before we start streaming a reply.
       window.setTimeout(() => sendRef.current(prompt), 60);
@@ -102,7 +103,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const close = useCallback(() => setIsOpen(false), []);
+  const close = useCallback(() => {
+    setIsOpen(false);
+    window.dispatchEvent(new CustomEvent('ui:modal', { detail: false }));
+  }, []);
 
   const reset = useCallback(() => {
     setMessages([]);

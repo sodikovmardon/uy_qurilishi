@@ -226,6 +226,7 @@ function CartDrawer({
   onCheckout: () => void;
 }) {
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('ui:modal', { detail: open }));
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';

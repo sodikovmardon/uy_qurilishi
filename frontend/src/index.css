@@ -12011,9 +12011,14 @@ button.drawing-card {
 
   /* Navbar padding tighter on mobile */
   .navbar {
-    padding: 0 12px;
+    padding: 0 16px;
     gap: 12px;
-    height: 52px;
+    height: 56px;
+  }
+
+  /* More separation between theme toggle and Kirish/avatar to avoid mis-taps */
+  .nav-actions {
+    gap: 12px;
   }
 
   .brand-text {
@@ -12086,6 +12091,19 @@ button.drawing-card {
   .stepper button {
     width: 44px;
     height: 44px;
+  }
+
+  /* Store category pills — snap while scrolling + comfortable tap targets */
+  .store-cats {
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+  }
+  .store-cats .chip {
+    scroll-snap-align: start;
+    flex: none;
+    min-height: 40px;
+    padding: 8px 14px;
   }
 
   /* Projects filter selects full-width wrap */
