@@ -22,6 +22,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage';
 import { DokonPage } from './pages/shop/DokonPage';
 import { ApiDocsPage } from './pages/shop/ApiDocsPage';
 import { AdminPage } from './pages/admin/AdminPage';
+import AdminPanelPage from './pages/admin/panel/AdminPanelPage';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { api } from './api/client';
 import { t } from './lib/i18n';
@@ -113,6 +114,7 @@ function AppContent() {
               <Route path="/boshqaruv/mahsulotlar" element={<AdminPage />} />
               <Route path="/boshqaruv/narxlar" element={<AdminPage />} />
               <Route path="/boshqaruv/buyurtmalar" element={<AdminPage />} />
+              <Route path="/admin/*" element={<AdminPanelPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </motion.div>

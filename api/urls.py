@@ -4,6 +4,7 @@ from api import views
 from api import admin_store
 from api import store
 from api import calc
+from api import admin_panel
 
 urlpatterns = [
     path('calculate/', views.calculate, name='api_calculate'),
@@ -42,6 +43,22 @@ urlpatterns = [
     path('admin/price/bulk/', admin_store.admin_price_bulk, name='store_admin_price_bulk'),
     path('admin/categories/', admin_store.admin_categories, name='store_admin_categories'),
     path('admin/orders/', admin_store.admin_orders, name='store_admin_orders'),
+
+    # Site admin panel API.
+    path('site-admin/auth/status/', admin_panel.admin_auth_status, name='admin_auth_status'),
+    path('site-admin/dashboard/', admin_panel.admin_dashboard, name='admin_dashboard'),
+    path('site-admin/projects/', admin_panel.admin_projects, name='admin_projects'),
+    path('site-admin/projects/<int:pk>/', admin_panel.admin_project_detail, name='admin_project_detail'),
+    path('site-admin/users/', admin_panel.admin_users, name='admin_users'),
+    path('site-admin/users/<int:pk>/', admin_panel.admin_user_detail, name='admin_user_detail'),
+    path('site-admin/users/<int:pk>/delete/', admin_panel.admin_user_delete, name='admin_user_delete'),
+    path('site-admin/reviews/', admin_panel.admin_reviews, name='admin_reviews'),
+    path('site-admin/categories/', admin_panel.admin_categories, name='admin_categories'),
+    path('site-admin/regions/', admin_panel.admin_regions, name='admin_regions'),
+    path('site-admin/settings/', admin_panel.admin_settings, name='admin_settings'),
+    path('site-admin/audit/', admin_panel.admin_audit_log, name='admin_audit_log'),
+    path('site-admin/notifications/', admin_panel.admin_notifications, name='admin_notifications'),
+    path('site-admin/notifications/read/', admin_panel.admin_notifications_mark_read, name='admin_notifications_read'),
 
     # Storefront orders (public contact-based form).
     path('orders/create/', admin_store.create_order, name='store_order_create'),

@@ -39,6 +39,16 @@ class CalculationProject(models.Model):
     #     empty for direct-image previews, "file_ext": "pdf|jpg|png|dwg|dxf",
     #   "floor_number": int|null, "uploaded_date": ISO date}.
     technical_drawings = models.JSONField(default=list, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending Review'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+        ],
+        default='approved',  # Default approved so existing projects are visible
+        db_index=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -134,3 +144,79 @@ class ProductOrder(models.Model):
 
     def __str__(self):
         return f"{self.product.name} x{self.quantity} — {self.phone}"
+
+
+# --- Admin Panel Models ---
+
+class AuditLog(models.Model):
+    """Immutable log of admin actions."""
+    admin_user = models.ForeignKey(
+        'auth.User', on_delete=models.SET_NULL, null=True, related_name='audit_logs'
+    )
+    action = models.CharField(max_length=100)
+    target_type = models.CharField(max_length=50)  # e.g. 'project', 'user', 'review', 'setting'
+    target_id = models.CharField(max_length=50, blank=True)
+    details = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.admin_user} — {self.action} — {self.target_type} #{self.target_id}"
+
+
+class SiteSettings(models.Model):
+    """Singleton site-wide settings."""
+    site_name = models.CharField(max_length=200, default='Uy Loyiha Studio')
+    tagline = models.CharField(max_length=300, blank=True)
+    contact_phone = models.CharField(max_length=30, blank=True)
+    contact_email = models.EmailField(blank=True)
+    
+    # Feature toggles
+    maintenance_mode = models.BooleanField(default=False)
+    allow_new_projects = models.BooleanField(default=True)
+    allow_reviews = models.BooleanField(default=True)
+    allow_ai_chat = models.BooleanField(default=True)
+    allow_store = models.BooleanField(default=True)
+    
+    # Integration settings
+    anthropic_api_key = models.CharField(max_length=200, blank=True)
+    groq_api_key = models.CharField(max_length=200, blank=True)
+    store_api_url = models.URLField(blank=True)
+    store_api_key = models.CharField(max_length=200, blank=True)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Site Settings'
+        verbose_name_plural = 'Site Settings'
+
+    def __str__(self):
+        return 'Site Settings'
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class AdminNotification(models.Model):
+    """Items requiring admin attention."""
+    TYPE_CHOICES = [
+        ('pending_project', 'Pending Project'),
+        ('flagged_review', 'Flagged Review'),
+        ('user_deletion_request', 'User Deletion Request'),
+    ]
+    notif_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    target_type = models.CharField(max_length=50, blank=True)
+    target_id = models.CharField(max_length=50, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_notif_type_display()}: {self.title}"

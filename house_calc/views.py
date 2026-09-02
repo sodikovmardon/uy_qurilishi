@@ -111,7 +111,7 @@ def project_pdf(request, pk):
 
 
 def project_detail(request, pk):
-    project = get_object_or_404(CalculationProject, pk=pk)
+    project = get_object_or_404(CalculationProject, pk=pk, status='approved')
     preview_path, _ = ensure_project_preview(project)
     context = {
         'project': project,
@@ -132,7 +132,7 @@ def project_detail(request, pk):
 
 
 def project_preview(request, pk):
-    project = get_object_or_404(CalculationProject, pk=pk)
+    project = get_object_or_404(CalculationProject, pk=pk, status='approved')
     preview_path, _ = ensure_project_preview(project)
     return FileResponse(preview_path.open('rb'), content_type='image/png')
 
@@ -144,14 +144,14 @@ def product_preview(request, pk):
 
 
 def project_list(request):
-    projects_list = CalculationProject.objects.all().order_by('-created_at')
+    projects_list = CalculationProject.objects.filter(status='approved').order_by('-created_at')
     paginator = Paginator(projects_list, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'projects': page_obj.object_list,
         'page_obj': page_obj,
-        'total_projects': CalculationProject.objects.count(),
+        'total_projects': CalculationProject.objects.filter(status='approved').count(),
     }
     return render(request, 'house_calc/project_list.html', context)
 

@@ -74,7 +74,7 @@ def calculate(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def project_list(request):
-    projects = CalculationProject.objects.all().order_by('-created_at')
+    projects = CalculationProject.objects.filter(status='approved').order_by('-created_at')
     page = int(request.GET.get('page', 1))
     per_page = 12
     start = (page - 1) * per_page
@@ -124,6 +124,8 @@ def project_create(request):
 def project_detail(request, pk):
     try:
         project = CalculationProject.objects.get(pk=pk)
+        if project.status != 'approved':
+            raise CalculationProject.DoesNotExist
     except CalculationProject.DoesNotExist:
         return Response({'error': 'Project not found'}, status=404)
 

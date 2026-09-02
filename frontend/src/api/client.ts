@@ -86,6 +86,171 @@ interface AuthStatusResponse {
   user: User | null;
 }
 
+// ---- Site Admin Panel types ----
+export interface SiteAdminStatus {
+  authenticated: boolean;
+  is_admin: boolean;
+  user: {
+    id: number;
+    name: string;
+    phone: string;
+    is_staff: boolean;
+    is_superuser: boolean;
+  } | null;
+}
+
+export interface SiteAdminStats {
+  users_total: number;
+  users_today: number;
+  users_active_week: number;
+  projects_total: number;
+  projects_pending: number;
+  projects_approved: number;
+  projects_rejected: number;
+  projects_today: number;
+  products_total: number;
+  orders_total: number;
+}
+
+export interface SiteAdminDashboard {
+  stats: SiteAdminStats;
+  daily_signups: { date: string; count: number }[];
+  daily_projects: { date: string; count: number }[];
+  pending_projects: {
+    id: number;
+    user_name: string;
+    area: number;
+    rooms: number;
+    created_at: string;
+  }[];
+  unread_notifications: number;
+}
+
+export interface SiteAdminProjectRow {
+  id: number;
+  user_name: string;
+  area: number;
+  rooms: number;
+  bathrooms: number;
+  status: 'pending' | 'approved' | 'rejected';
+  features: string[];
+  source: string;
+  created_at: string;
+  has_pool: boolean;
+  has_garage: boolean;
+  has_terrace: boolean;
+  images: string[];
+}
+
+export interface SiteAdminProjectList {
+  total: number;
+  page: number;
+  per_page: number;
+  results: SiteAdminProjectRow[];
+}
+
+export interface SiteAdminProject {
+  id: number;
+  user_name: string;
+  area: number;
+  rooms: number;
+  bathrooms: number;
+  status: string;
+  features: string[];
+  source: string;
+  images: string[];
+  technical_drawings: TechnicalDrawing[];
+  ai_summary: string;
+  has_pool: boolean;
+  has_garage: boolean;
+  has_terrace: boolean;
+  created_at: string;
+}
+
+export interface SiteAdminUserRow {
+  id: number;
+  name: string;
+  phone: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_active: boolean;
+  date_joined: string;
+  last_login: string | null;
+  project_count: number;
+}
+
+export interface SiteAdminUserList {
+  total: number;
+  page: number;
+  per_page: number;
+  results: SiteAdminUserRow[];
+}
+
+export interface SiteAdminUser {
+  id: number;
+  name: string;
+  phone: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_active: boolean;
+  date_joined: string;
+  last_login: string | null;
+  projects: { id: number; area: number; rooms: number; status: string; created_at: string }[];
+}
+
+export interface SiteAdminReviewList {
+  total: number;
+  results: unknown[];
+}
+
+export interface SiteSettingsData {
+  site_name: string;
+  tagline: string;
+  contact_phone: string;
+  contact_email: string;
+  maintenance_mode: boolean;
+  allow_new_projects: boolean;
+  allow_reviews: boolean;
+  allow_ai_chat: boolean;
+  allow_store: boolean;
+  store_api_url: string;
+  store_api_key: boolean;
+  anthropic_api_key: boolean;
+  groq_api_key: boolean;
+  updated_at: string;
+}
+
+export interface SiteAdminAuditRow {
+  id: number;
+  admin_name: string;
+  action: string;
+  target_type: string;
+  target_id: string;
+  details: string;
+  created_at: string;
+}
+
+export interface SiteAdminAuditList {
+  total: number;
+  page: number;
+  per_page: number;
+  results: SiteAdminAuditRow[];
+}
+
+export interface SiteAdminNotification {
+  id: number;
+  type: string;
+  title: string;
+  target_type: string;
+  target_id: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface SiteAdminNotificationList {
+  results: SiteAdminNotification[];
+}
+
 /** Parsed API error with machine-readable status + human message + field errors. */
 export class ApiError extends Error {
   status: number;
@@ -490,5 +655,73 @@ export const api = {
 
   adminOrders() {
     return request<StoreOrder[]>('/admin/orders/');
+  },
+
+  // ---- Site Admin Panel API (guarded by is_staff server-side) ----
+  adminStatus() {
+    return request<SiteAdminStatus>('/site-admin/auth/status/');
+  },
+  siteAdminDashboard() {
+    return request<SiteAdminDashboard>('/site-admin/dashboard/');
+  },
+  siteAdminProjects(params: { status?: string; search?: string; sort?: string; page?: number; per_page?: number } = {}) {
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    return request<SiteAdminProjectList>(`/site-admin/projects/${qs ? `?${qs}` : ''}`);
+  },
+  siteAdminProjectDetail(id: number) {
+    return request<SiteAdminProject>(`/site-admin/projects/${id}/`);
+  },
+  siteAdminProjectUpdate(id: number, data: Record<string, unknown>) {
+    return request<{ ok: boolean }>(`/site-admin/projects/${id}/`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  siteAdminProjectBulkAction(action: 'approve' | 'reject', ids: number[], reason = '') {
+    return request<{ updated: number }>('/site-admin/projects/', {
+      method: 'POST',
+      body: JSON.stringify({ action, ids, reason }),
+    });
+  },
+  siteAdminProjectDelete(id: number) {
+    return request<{ ok: boolean }>(`/site-admin/projects/${id}/`, { method: 'DELETE' });
+  },
+  siteAdminUsers(params: { search?: string; status?: string; sort?: string; page?: number; per_page?: number } = {}) {
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    return request<SiteAdminUserList>(`/site-admin/users/${qs ? `?${qs}` : ''}`);
+  },
+  siteAdminUserDetail(id: number) {
+    return request<SiteAdminUser>(`/site-admin/users/${id}/`);
+  },
+  siteAdminUserUpdate(id: number, data: Record<string, unknown>) {
+    return request<{ ok: boolean }>(`/site-admin/users/${id}/`, { method: 'PUT', body: JSON.stringify(data) });
+  },
+  siteAdminUserDelete(id: number) {
+    return request<{ ok: boolean }>(`/site-admin/users/${id}/delete/`, { method: 'DELETE' });
+  },
+  siteAdminReviews() {
+    return request<SiteAdminReviewList>('/site-admin/reviews/');
+  },
+  siteAdminCategories() {
+    return request<{ results: { name: string; count: number }[] }>('/site-admin/categories/');
+  },
+  siteAdminRegions() {
+    return request<{ results: { name: string; code: string }[] }>('/site-admin/regions/');
+  },
+  siteAdminSettings() {
+    return request<SiteSettingsData>('/site-admin/settings/');
+  },
+  siteAdminUpdateSettings(data: Record<string, unknown>) {
+    return request<{ ok: boolean }>('/site-admin/settings/', { method: 'PUT', body: JSON.stringify(data) });
+  },
+  siteAdminAudit(params: { action?: string; admin?: string; page?: number } = {}) {
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    return request<SiteAdminAuditList>(`/site-admin/audit/${qs ? `?${qs}` : ''}`);
+  },
+  siteAdminNotifications(unread = false) {
+    return request<SiteAdminNotificationList>(`/site-admin/notifications/${unread ? '?unread=true' : ''}`);
+  },
+  siteAdminMarkNotificationsRead(ids: number[] = []) {
+    return request<{ ok: boolean }>('/site-admin/notifications/read/', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    });
   },
 };
